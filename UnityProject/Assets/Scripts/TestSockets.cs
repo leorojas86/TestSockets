@@ -9,10 +9,12 @@ public class TestSockets : MonoBehaviour
 	void OnGUI()
 	{
 		if(GUI.Button(new Rect(10,370,100,30)," Start Server"))
-			SocketsManager.Instance.StartServerListening();
+			new SocketServer();
+			//SocketsManager.Instance.StartServerListening();
 
 		if(GUI.Button(new Rect(10,470,100,30)," Start Client"))
-			SocketsManager.Instance.StartClientListening();
+			new SocketClient();
+			//SocketsManager.Instance.StartClientListening();
 
 		// Begin a scroll view. All rects are calculated automatically - 
 		// it will use up any available screen space and make sure contents flow correctly.

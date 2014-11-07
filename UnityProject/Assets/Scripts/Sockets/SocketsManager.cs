@@ -5,6 +5,10 @@ using System.Net.Sockets;
 using System.Text;
 using System;
 
+
+/// <summary>
+/// http://tech.pro/tutorial/704/csharp-tutorial-simple-threaded-tcp-server
+/// </summary>
 public class SocketsManager 
 {
 	#region Variables
