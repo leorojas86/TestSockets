@@ -1,43 +1,67 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 using System.Net;
 
-
 public class SocketServer
 {
-	private TcpListener tcpListener;
-	private Thread listenThread;
-	
-	public SocketServer()
+	#region Variables
+
+	private TcpListener _tcpClientsListener = null;
+	private Thread _listenClientsThread 	= null;
+	private List<TcpClient> _clients        = new List<TcpClient>();
+	private IPEndPoint _serverEndPoint		= null;
+
+	#endregion
+
+	#region Properties
+
+	public IPEndPoint ServerEndPoint
 	{
-		this.tcpListener = new TcpListener(IPAddress.Any, 3000);
-		this.listenThread = new Thread(new ThreadStart(ListenForClients));
-		this.listenThread.Start();
+		get { return _serverEndPoint; }
 	}
+	
+	#endregion
+
+	#region Constructors
+	
+	public SocketServer(IPAddress ip, int port)
+	{
+		_serverEndPoint 	 = new IPEndPoint(ip, port);
+		_tcpClientsListener  = new TcpListener(_serverEndPoint);
+		_listenClientsThread = new Thread(new ThreadStart(ListenForClients));
+		_listenClientsThread.Start();
+	}
+
+	#endregion
+
+	#region Methods
 
 	private void ListenForClients()
 	{
-		this.tcpListener.Start();
+		_tcpClientsListener.Start();
 		
 		while (true)
 		{
 			//blocks until a client has connected to the server
-			TcpClient client = this.tcpListener.AcceptTcpClient();
+			TcpClient client = _tcpClientsListener.AcceptTcpClient();
 			
 			//create a thread to handle communication 
 			//with connected client
-			Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
+			Thread clientThread = new Thread(new ParameterizedThreadStart(OnClientMessage));
 			clientThread.Start(client);
+
+			_clients.Add(client);
 		}
 	}
 
-	private void HandleClientComm(object client)
+	private void OnClientMessage(object client)
 	{
-		TcpClient tcpClient = (TcpClient)client;
+		TcpClient tcpClient 	   = (TcpClient)client;
 		NetworkStream clientStream = tcpClient.GetStream();
 		
 		byte[] message = new byte[4096];
@@ -71,4 +95,6 @@ public class SocketServer
 		
 		tcpClient.Close();
 	}
+
+	#endregion
 }

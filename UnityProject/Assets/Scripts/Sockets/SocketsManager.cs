@@ -15,6 +15,12 @@ public class SocketsManager
 
 	private static SocketsManager _instance = null;
 
+	private SocketServer _server = null;
+
+	private SocketClient _client = null;
+
+	private int _port = 3000;
+
 	#endregion
 
 	#region Properties
@@ -31,6 +37,22 @@ public class SocketsManager
 		} 
 	}
 
+	public SocketServer Server
+	{
+		get { return _server; }
+	}
+
+	public SocketClient Client
+	{
+		get { return _client; }
+	}
+
+	public int Port
+	{
+		get { return _port; }
+		set { _port = value; }
+	}
+
 	#endregion
 
 	#region Constructors
@@ -40,129 +62,30 @@ public class SocketsManager
 	}
 
 	#endregion
-	
 
-	// Incoming data from the client.
-	public string data = null;
-	
-	public void StartServerListening() 
+	#region Methods
+
+	public void StartServer()
 	{
-		// Data buffer for incoming data.
-		byte[] bytes = new Byte[1024];
-		
-		// Establish the local endpoint for the socket.
-		// Dns.GetHostName returns the name of the 
-		// host running the application.
-		IPAddress ipAddress = NetworkUtils.GetMyIP4Address();
-
-		if(ipAddress != null)
+		if(_server == null)
 		{
-			IPEndPoint localEndPoint = new IPEndPoint(ipAddress, 11000);
-			
-			// Create a TCP/IP socket.
-			Socket listener = new Socket(AddressFamily.InterNetwork,
-			                             SocketType.Stream, ProtocolType.Tcp );
-			
-			// Bind the socket to the local endpoint and 
-			// listen for incoming connections.
-			try {
-				listener.Bind(localEndPoint);
-				listener.Listen(10);
-				
-				// Start listening for connections.
-				while (true) {
-					LogManager.Instance.LogMessage("Waiting for a connection...");
-					// Program is suspended while waiting for an incoming connection.
-					Socket handler = listener.Accept();
-					data = null;
-					
-					// An incoming connection needs to be processed.
-					while (true) {
-						bytes = new byte[1024];
-						int bytesRec = handler.Receive(bytes);
-						data += Encoding.ASCII.GetString(bytes,0,bytesRec);
-						if (data.IndexOf("<EOF>") > -1) {
-							break;
-						}
-					}
-					
-					// Show the data on the console.
-					LogManager.Instance.LogMessage( "Text received : " + data);
-					
-					// Echo the data back to the client.
-					byte[] msg = Encoding.ASCII.GetBytes(data);
-					
-					handler.Send(msg);
-					handler.Shutdown(SocketShutdown.Both);
-					handler.Close();
-				}
-				
-			} catch (Exception e) {
-				LogManager.Instance.LogMessage(e.ToString());
-			}
+			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
+			_server 			= new SocketServer(myAddress, _port);
 		}
 		else
-			LogManager.Instance.LogMessage("A valid ip4 address was not found");
-		
+			Debug.LogError("Can not start server twice, please stop the server before starting a new one");
 	}
 
-	public void StartClientListening() {
-		// Data buffer for incoming data.
-		byte[] bytes = new byte[1024];
-		
-		// Connect to a remote device.
-		try {
-			// Establish the remote endpoint for the socket.
-			// This example uses port 11000 on the local computer.
-			IPAddress ipAddress = NetworkUtils.GetMyIP4Address();
-			
-			if(ipAddress != null)
-			{
-				LogManager.Instance.LogMessage("ipAddress.AddressFamily = " + ipAddress.AddressFamily);
-
-				LogManager.Instance.LogMessage("ipAddress = " + ipAddress);
-
-				IPEndPoint remoteEP = new IPEndPoint(ipAddress,11000);
-				
-				// Create a TCP/IP  socket.
-				Socket sender = new Socket(AddressFamily.InterNetwork, 
-				                           SocketType.Stream, ProtocolType.Tcp );
-				
-				// Connect the socket to the remote endpoint. Catch any errors.
-				try {
-					sender.Connect(remoteEP);
-					
-					LogManager.Instance.LogMessage("Socket connected to " + 
-					                  sender.RemoteEndPoint.ToString());
-					
-					// Encode the data string into a byte array.
-					byte[] msg = Encoding.ASCII.GetBytes("This is a test<EOF>");
-					
-					// Send the data through the socket.
-					int bytesSent = sender.Send(msg);
-					
-					// Receive the response from the remote device.
-					int bytesRec = sender.Receive(bytes);
-					LogManager.Instance.LogMessage("Echoed test = " +
-					                  Encoding.ASCII.GetString(bytes,0,bytesRec));
-					
-					// Release the socket.
-					sender.Shutdown(SocketShutdown.Both);
-					sender.Close();
-					
-				} catch (ArgumentNullException ane) {
-					LogManager.Instance.LogMessage("ArgumentNullException : " + ane.ToString());
-				} catch (SocketException se) {
-					LogManager.Instance.LogMessage("SocketException : " + se.ToString());
-				} catch (Exception e) {
-					LogManager.Instance.LogMessage("Unexpected exception : " + e.ToString());
-				}
-			}
-			else
-				LogManager.Instance.LogMessage("A valid ip4 address was not found");
-				
-			} catch (Exception e) {
-				LogManager.Instance.LogMessage( e.ToString());
+	public void StartClient()
+	{
+		if(_client == null)
+		{
+			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
+			_client 			= new SocketClient(myAddress, _port);
 		}
+		else
+			Debug.LogError("Can not start server twice, please stop the server before starting a new one");
 	}
+
+	#endregion
 }

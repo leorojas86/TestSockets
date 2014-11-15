@@ -6,23 +6,40 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Net;
 
-
 public class SocketClient 
 {
-	public SocketClient()
+	#region Variables
+
+	private TcpClient _tcpClient = null;
+
+	private IPEndPoint _serverEndPoint = null;
+
+	#endregion
+
+	#region Properties
+	
+	public IPEndPoint ServerEndPoint
 	{
-		TcpClient client = new TcpClient();
+		get { return _serverEndPoint; }
+	}
+	
+	#endregion
+
+	#region Constructors
+	
+	public SocketClient(IPAddress serverAddress, int port)
+	{
+		_serverEndPoint = new IPEndPoint(serverAddress, port);
+		_tcpClient 		= new TcpClient();
+		_tcpClient.Connect(_serverEndPoint);
 		
-		IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 3000);
-		
-		client.Connect(serverEndPoint);
-		
-		NetworkStream clientStream = client.GetStream();
-		
-		ASCIIEncoding encoder = new ASCIIEncoding();
-		byte[] buffer = encoder.GetBytes("Hello Server!");
+		NetworkStream clientStream 	= _tcpClient.GetStream();
+		ASCIIEncoding encoder 		= new ASCIIEncoding();
+		byte[] buffer 				= encoder.GetBytes("Hello Server!");
 		
 		clientStream.Write(buffer, 0 , buffer.Length);
 		clientStream.Flush();
 	}
+
+	#endregion
 }

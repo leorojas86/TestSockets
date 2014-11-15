@@ -8,13 +8,17 @@ public class TestSockets : MonoBehaviour
 
 	void OnGUI()
 	{
-		if(GUI.Button(new Rect(10,370,100,30)," Start Server"))
-			new SocketServer();
-			//SocketsManager.Instance.StartServerListening();
+		if(GUI.Button(new Rect(10,370,100,30), "Start Server"))
+			SocketsManager.Instance.StartServer();
 
-		if(GUI.Button(new Rect(10,470,100,30)," Start Client"))
-			new SocketClient();
-			//SocketsManager.Instance.StartClientListening();
+		if(SocketsManager.Instance.Server != null)
+			GUI.Label(new Rect(190,370,400,30), "Server started at ip " + SocketsManager.Instance.Server.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Server.ServerEndPoint.Port);
+
+		if(GUI.Button(new Rect(10,470,100,30), "Start Client"))
+			SocketsManager.Instance.StartClient();
+
+		if(SocketsManager.Instance.Client != null)
+			GUI.Label(new Rect(190,470,400,30), "Client connected to server at ip " + SocketsManager.Instance.Client.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Client.ServerEndPoint.Port);
 
 		// Begin a scroll view. All rects are calculated automatically - 
 		// it will use up any available screen space and make sure contents flow correctly.
@@ -23,10 +27,9 @@ public class TestSockets : MonoBehaviour
 		
 		// We just add a single label to go inside the scroll view. Note how the
 		// scrollbars will work correctly with wordwrap.
-		GUILayout.Label (LogManager.Instance.Log);
+		GUILayout.Label(LogManager.Instance.Log);
 		
 		// End the scrollview we began above.
-		GUILayout.EndScrollView ();
-
+		GUILayout.EndScrollView();
 	}
 }
