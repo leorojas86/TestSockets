@@ -74,7 +74,7 @@ public class SocketsManager
 			_server.StartServer(myAddress, _port);
 		}
 		else
-			Debug.LogError("Can not start server twice, please stop the server before starting a new one");
+			LogManager.Instance.LogMessage("Can not start server twice, please stop the server before starting a new one");
 	}
 
 	public void StartClient()
@@ -83,10 +83,14 @@ public class SocketsManager
 		{
 			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
 			_client 			= new SocketClient();
-			_client.ConnectToServer(myAddress, _port);
+
+			if(_client.ConnectToServer(myAddress, _port))
+				_client.SendMessageToServer("Hello Server!");
+			else
+				_client = null;
 		}
 		else
-			Debug.LogError("Can not start server twice, please stop the server before starting a new one");
+			LogManager.Instance.LogMessage("Can not start client twice, please stop the server before starting a new one");
 	}
 
 	#endregion
