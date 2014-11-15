@@ -10,8 +10,7 @@ public class SocketClient
 {
 	#region Variables
 
-	private TcpClient _tcpClient = null;
-
+	private TcpClient _tcpClient 	   = null;
 	private IPEndPoint _serverEndPoint = null;
 
 	#endregion
@@ -27,7 +26,15 @@ public class SocketClient
 
 	#region Constructors
 	
-	public SocketClient(IPAddress serverAddress, int port)
+	public SocketClient()
+	{
+	}
+
+	#endregion
+
+	#region Methods
+
+	public void ConnectToServer(IPAddress serverAddress, int port)
 	{
 		_serverEndPoint = new IPEndPoint(serverAddress, port);
 		_tcpClient 		= new TcpClient();

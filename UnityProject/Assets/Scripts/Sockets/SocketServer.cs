@@ -29,17 +29,21 @@ public class SocketServer
 
 	#region Constructors
 	
-	public SocketServer(IPAddress ip, int port)
+	public SocketServer()
+	{
+	}
+
+	#endregion
+
+	#region Methods
+
+	public void StartServer(IPAddress ip, int port)
 	{
 		_serverEndPoint 	 = new IPEndPoint(ip, port);
 		_tcpClientsListener  = new TcpListener(_serverEndPoint);
 		_listenClientsThread = new Thread(new ThreadStart(ListenForClients));
 		_listenClientsThread.Start();
 	}
-
-	#endregion
-
-	#region Methods
 
 	private void ListenForClients()
 	{

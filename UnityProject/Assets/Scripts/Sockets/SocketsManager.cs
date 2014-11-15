@@ -70,7 +70,8 @@ public class SocketsManager
 		if(_server == null)
 		{
 			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-			_server 			= new SocketServer(myAddress, _port);
+			_server 			= new SocketServer();
+			_server.StartServer(myAddress, _port);
 		}
 		else
 			Debug.LogError("Can not start server twice, please stop the server before starting a new one");
@@ -81,7 +82,8 @@ public class SocketsManager
 		if(_client == null)
 		{
 			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-			_client 			= new SocketClient(myAddress, _port);
+			_client 			= new SocketClient();
+			_client.ConnectToServer(myAddress, _port);
 		}
 		else
 			Debug.LogError("Can not start server twice, please stop the server before starting a new one");
