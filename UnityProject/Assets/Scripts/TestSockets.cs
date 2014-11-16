@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Net.Sockets;
+using System.Text;
 
 public class TestSockets : MonoBehaviour 
 {
@@ -9,13 +11,21 @@ public class TestSockets : MonoBehaviour
 	void OnGUI()
 	{
 		if(GUI.Button(new Rect(10,370,100,30), "Start Server"))
+		{
 			SocketsManager.Instance.StartServer();
+			SocketsManager.Instance.Server.OnClientConnected = OnClientConnected;
+			SocketsManager.Instance.Server.OnClientMessage   = OnClientMessage;
+		}
 
 		if(SocketsManager.Instance.Server != null)
 			GUI.Label(new Rect(190,370,400,30), "Server started at ip " + SocketsManager.Instance.Server.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Server.ServerEndPoint.Port);
 
 		if(GUI.Button(new Rect(10,470,100,30), "Start Client"))
+		{
 			SocketsManager.Instance.StartClient();
+			SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
+			SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");
+		}
 
 		if(SocketsManager.Instance.Client != null)
 			GUI.Label(new Rect(190,470,400,30), "Client connected to server at ip " + SocketsManager.Instance.Client.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Client.ServerEndPoint.Port);
@@ -31,5 +41,19 @@ public class TestSockets : MonoBehaviour
 		
 		// End the scrollview we began above.
 		GUILayout.EndScrollView();
+	}
+
+	private void OnClientConnected(TcpClient client)
+	{
+		LogManager.Instance.LogMessage("OnClientConnected = " + client.ToString());
+	}
+
+	private void OnClientMessage(TcpClient client, byte[] bytes)
+	{
+		ASCIIEncoding encoder = new ASCIIEncoding();
+		string message = encoder.GetString(bytes, 0, bytes.Length);
+		LogManager.Instance.LogMessage("OnClientMessage = " + message);
+
+		//SocketsManager.Instance.Client.SendMessageToServer("Hello Server3!");
 	}
 }

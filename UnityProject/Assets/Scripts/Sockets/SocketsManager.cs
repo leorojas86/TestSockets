@@ -84,9 +84,7 @@ public class SocketsManager
 			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
 			_client 			= new SocketClient();
 
-			if(_client.ConnectToServer(myAddress, _port))
-				_client.SendMessageToServer("Hello Server!");
-			else
+			if(!_client.ConnectToServer(myAddress, _port))
 				_client = null;
 		}
 		else

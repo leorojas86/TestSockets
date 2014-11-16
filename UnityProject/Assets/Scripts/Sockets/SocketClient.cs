@@ -5,6 +5,7 @@ using System.Text;
 using System.Net.Sockets;
 using System.Threading;
 using System.Net;
+using System.IO;
 
 public class SocketClient 
 {
@@ -61,9 +62,21 @@ public class SocketClient
 
 	public void SendBytesToServer(byte[] bytes)
 	{
-		NetworkStream clientStream = _tcpClient.GetStream();
-		clientStream.Write(bytes, 0 , bytes.Length);
-		clientStream.Flush();
+		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + 4))
+		{
+			using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+			{
+				int messageLength = bytes.Length;
+				binaryWriter.Write(messageLength);
+				binaryWriter.Write(bytes);
+			}
+
+			byte[] buffer 			   = memoryStream.GetBuffer();
+			//LogManager.Instance.LogMessage("SendBytesToServer, buffer = " + buffer.Length);
+			NetworkStream clientStream = _tcpClient.GetStream();
+			clientStream.Write(buffer, 0 , buffer.Length);
+			clientStream.Flush();
+		}
 	}
 
 	#endregion
