@@ -104,7 +104,6 @@ public class SocketServer
 					while(clientStream.DataAvailable)
 					{
 						numberOfBytesRead = clientStream.Read(readBuffer, 0, readBuffer.Length);
-						LogManager.Instance.LogMessage("numberOfBytesRead = " + numberOfBytesRead);
 						memoryStream.Write(readBuffer, 0, numberOfBytesRead);
 						bufferLength += numberOfBytesRead;
 					}
@@ -121,13 +120,9 @@ public class SocketServer
 							while(bufferLength > 0)
 							{
 								int messageLength = binaryReader.ReadInt32();//Read the message length
-
-								LogManager.Instance.LogMessage("messageLength = " + messageLength);
-
 								bufferLength	 -= 4;
 								byte[] bytes 	  = binaryReader.ReadBytes(messageLength);
 								bufferLength     -= messageLength;
-								LogManager.Instance.LogMessage("bufferLength = " + bufferLength);
 								NotifyOnClientMessage(tcpClient, bytes);
 							}
 						}

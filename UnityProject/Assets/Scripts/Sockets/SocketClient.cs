@@ -57,10 +57,10 @@ public class SocketClient
 		ASCIIEncoding encoder = new ASCIIEncoding();
 		byte[] bytes 		  = encoder.GetBytes(message);
 		
-		SendBytesToServer(bytes);
+		SendMessageToServer(bytes);
 	}
 
-	public void SendBytesToServer(byte[] bytes)
+	public void SendMessageToServer(byte[] bytes)
 	{
 		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + 4))
 		{
@@ -72,7 +72,6 @@ public class SocketClient
 			}
 
 			byte[] buffer 			   = memoryStream.GetBuffer();
-			//LogManager.Instance.LogMessage("SendBytesToServer, buffer = " + buffer.Length);
 			NetworkStream clientStream = _tcpClient.GetStream();
 			clientStream.Write(buffer, 0 , buffer.Length);
 			clientStream.Flush();
