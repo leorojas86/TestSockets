@@ -23,6 +23,7 @@ public class TestSockets : MonoBehaviour
 		if(GUI.Button(new Rect(10,470,100,30), "Start Client"))
 		{
 			SocketsManager.Instance.StartClient();
+			SocketsManager.Instance.Client.OnServerMessage = OnServerMessage;
 			SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
 			SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");
 		}
@@ -54,5 +55,11 @@ public class TestSockets : MonoBehaviour
 	{
 		string messageString = NetworkUtils.GetMessageString(message);
 		LogManager.Instance.LogMessage("OnClientMessage = " + messageString);
+	}
+
+	private void OnServerMessage(byte[] message)
+	{
+		string messageString = NetworkUtils.GetMessageString(message);
+		LogManager.Instance.LogMessage("OnServerMessage = " + messageString);
 	}
 }

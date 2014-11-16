@@ -14,6 +14,8 @@ public class SocketClient
 	private TcpClient _tcpClient 	   = null;
 	private IPEndPoint _serverEndPoint = null;
 
+	public System.Action<byte[]> OnServerMessage = null;
+
 	#endregion
 
 	#region Properties
@@ -43,6 +45,10 @@ public class SocketClient
 		try
 		{
 			_tcpClient.Connect(_serverEndPoint);
+
+			Thread clientThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
+			clientThread.Start();
+
 			return true;
 		}
 		catch(Exception e)
@@ -62,6 +68,45 @@ public class SocketClient
 	public void SendMessageToServer(byte[] bytes)
 	{
 		NetworkUtils.SendBytesToClient(bytes, _tcpClient);
+	}
+
+	private void NotifyOnServerMessage(byte[] message)
+	{
+		if(OnServerMessage != null)
+			OnServerMessage(message);
+	}
+
+	private void ProcessServerMessagesThread()
+	{
+		NetworkStream clientStream = _tcpClient.GetStream();
+		
+		while(true)
+		{
+			byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
+
+			if(bytes != null)
+			{
+				int bytesLength = bytes.Length;
+				
+				using(MemoryStream memoryStream = new MemoryStream(bytes))
+				{
+					using(BinaryReader binaryReader = new BinaryReader(memoryStream))
+					{
+						//Debug.Log("using(BinaryReader binaryReader = new BinaryReader(memoryStream))");
+						
+						while(bytesLength > 0)
+						{
+							int messageLength = binaryReader.ReadInt32();//Read the message length
+							bytesLength	 	 -= 4;
+							byte[] message 	  = binaryReader.ReadBytes(messageLength);
+							bytesLength      -= messageLength;
+							
+							NotifyOnServerMessage(message);
+						}
+					}
+				}
+			}
+		}
 	}
 
 	#endregion

@@ -55,19 +55,25 @@ public class NetworkUtils
 
 	public static byte[] ReadBytesFromClient(TcpClient tcpClient)
 	{
-		List<byte> bytesList 	   = new List<byte>();
 		NetworkStream clientStream = tcpClient.GetStream();
-		byte[] readBuffer     	   = new byte[1024];
-		
-		// Incoming message may be larger than the buffer size. 
-		while(clientStream.DataAvailable)
+
+		if(clientStream.DataAvailable)
 		{
-			int numberOfBytesRead = clientStream.Read(readBuffer, 0, readBuffer.Length);
-			byte[] readBytes 	  = new byte[numberOfBytesRead];
-			System.Array.Copy(readBuffer, readBytes, numberOfBytesRead);
-			bytesList.AddRange(readBytes);
+			List<byte> bytesList = new List<byte>();
+			byte[] readBuffer    = new byte[1024];
+			
+			// Incoming message may be larger than the buffer size. 
+			while(clientStream.DataAvailable)
+			{
+				int numberOfBytesRead = clientStream.Read(readBuffer, 0, readBuffer.Length);
+				byte[] readBytes 	  = new byte[numberOfBytesRead];
+				System.Array.Copy(readBuffer, readBytes, numberOfBytesRead);
+				bytesList.AddRange(readBytes);
+			}
+
+			return bytesList.ToArray();
 		}
 
-		return bytesList.ToArray();
+		return null;
 	}
 }

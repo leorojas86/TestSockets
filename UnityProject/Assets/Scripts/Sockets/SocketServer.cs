@@ -90,9 +90,10 @@ public class SocketServer
 
 		while(true)
 		{
-			if(clientStream.DataAvailable)
+			byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
+
+			if(bytes != null)
 			{
-				byte[] bytes 	= NetworkUtils.ReadBytesFromClient(tcpClient);
 				int bytesLength = bytes.Length;
 
 				using(MemoryStream memoryStream = new MemoryStream(bytes))
