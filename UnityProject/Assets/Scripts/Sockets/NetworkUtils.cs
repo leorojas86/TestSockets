@@ -39,4 +39,16 @@ public class NetworkUtils
 			clientStream.Flush();
 		}
 	}
+
+	public static string GetMessageString(byte[] message)
+	{
+		ASCIIEncoding encoder = new ASCIIEncoding();
+		return encoder.GetString(message, 0, message.Length);
+	}
+
+	public static byte[] GetMessageBytes(string message)
+	{
+		ASCIIEncoding encoder = new ASCIIEncoding();
+		return encoder.GetBytes(message);
+	}
 }

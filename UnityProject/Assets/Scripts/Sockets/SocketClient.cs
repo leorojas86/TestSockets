@@ -54,9 +54,8 @@ public class SocketClient
 
 	public void SendMessageToServer(string message)
 	{
-		ASCIIEncoding encoder = new ASCIIEncoding();
-		byte[] bytes 		  = encoder.GetBytes(message);
-		
+		byte[] bytes = NetworkUtils.GetMessageBytes(message);
+
 		SendMessageToServer(bytes);
 	}
 

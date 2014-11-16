@@ -141,10 +141,8 @@ public class SocketServer
 
 	public void SendMessageToClients(string message)
 	{
-		ASCIIEncoding encoder = new ASCIIEncoding();
-		byte[] buffer 		  = encoder.GetBytes(message);
-
-		SendMessageToClients(buffer);
+		byte[] bytes = NetworkUtils.GetMessageBytes(message);
+		SendMessageToClients(bytes);
 	}
 
 	public void SendMessageToClients(byte[] message)
@@ -155,10 +153,9 @@ public class SocketServer
 
 	public void SendMessageToClient(string message, TcpClient client)
 	{
-		ASCIIEncoding encoder = new ASCIIEncoding();
-		byte[] buffer 		  = encoder.GetBytes(message);
+		byte[] bytes = NetworkUtils.GetMessageBytes(message);;
 		
-		SendMessageToClient(buffer, client);
+		SendMessageToClient(bytes, client);
 	}
 
 	public void SendMessageToClient(byte[] message, TcpClient client)

@@ -50,8 +50,7 @@ public class TestSockets : MonoBehaviour
 
 	private void OnClientMessage(TcpClient client, byte[] message)
 	{
-		ASCIIEncoding encoder = new ASCIIEncoding();
-		string messageString  = encoder.GetString(message, 0, message.Length);
+		string messageString = NetworkUtils.GetMessageString(message);
 		LogManager.Instance.LogMessage("OnClientMessage = " + messageString);
 	}
 }
