@@ -94,7 +94,7 @@ public class SocketServer
 			{
 				//Debug.Log("clientStream.DataAvailable = " + clientStream.DataAvailable);
 
-				using(MemoryStream memoryStream = new MemoryStream())
+				using(MemoryStream memoryStream = new MemoryStream(1024))
 				{
 					int bufferLength 	  = 0; 
 					byte[] readBuffer     = new byte[1024];
@@ -123,6 +123,7 @@ public class SocketServer
 								bufferLength	 -= 4;
 								byte[] bytes 	  = binaryReader.ReadBytes(messageLength);
 								bufferLength     -= messageLength;
+
 								NotifyOnClientMessage(tcpClient, bytes);
 							}
 						}
@@ -132,11 +133,39 @@ public class SocketServer
 		}
 	}
 
-	private void NotifyOnClientMessage(TcpClient client, byte[] bytes)
+	private void NotifyOnClientMessage(TcpClient client, byte[] message)
 	{
 		if(OnClientMessage != null)
-			OnClientMessage(client, bytes);
+			OnClientMessage(client, message);
 	}
+
+	public void SendMessageToClients(string message)
+	{
+		ASCIIEncoding encoder = new ASCIIEncoding();
+		byte[] buffer 		  = encoder.GetBytes(message);
+
+		SendMessageToClients(buffer);
+	}
+
+	public void SendMessageToClients(byte[] message)
+	{
+		foreach(TcpClient client in _clients)
+			SendMessageToClient(message, client);
+	}
+
+	public void SendMessageToClient(string message, TcpClient client)
+	{
+		ASCIIEncoding encoder = new ASCIIEncoding();
+		byte[] buffer 		  = encoder.GetBytes(message);
+		
+		SendMessageToClient(buffer, client);
+	}
+
+	public void SendMessageToClient(byte[] message, TcpClient client)
+	{
+		NetworkUtils.SendBytesToClient(message, client);
+	}
+
 
 	#endregion
 }

@@ -62,20 +62,7 @@ public class SocketClient
 
 	public void SendMessageToServer(byte[] bytes)
 	{
-		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + 4))
-		{
-			using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
-			{
-				int messageLength = bytes.Length;
-				binaryWriter.Write(messageLength);
-				binaryWriter.Write(bytes);
-			}
-
-			byte[] buffer 			   = memoryStream.GetBuffer();
-			NetworkStream clientStream = _tcpClient.GetStream();
-			clientStream.Write(buffer, 0 , buffer.Length);
-			clientStream.Flush();
-		}
+		NetworkUtils.SendBytesToClient(bytes, _tcpClient);
 	}
 
 	#endregion

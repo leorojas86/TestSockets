@@ -48,12 +48,10 @@ public class TestSockets : MonoBehaviour
 		LogManager.Instance.LogMessage("OnClientConnected = " + client.ToString());
 	}
 
-	private void OnClientMessage(TcpClient client, byte[] bytes)
+	private void OnClientMessage(TcpClient client, byte[] message)
 	{
 		ASCIIEncoding encoder = new ASCIIEncoding();
-		string message = encoder.GetString(bytes, 0, bytes.Length);
-		LogManager.Instance.LogMessage("OnClientMessage = " + message);
-
-		//SocketsManager.Instance.Client.SendMessageToServer("Hello Server3!");
+		string messageString  = encoder.GetString(message, 0, message.Length);
+		LogManager.Instance.LogMessage("OnClientMessage = " + messageString);
 	}
 }

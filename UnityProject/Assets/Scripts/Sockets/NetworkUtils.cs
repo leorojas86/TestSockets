@@ -3,6 +3,7 @@ using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.IO;
 
 public class NetworkUtils 
 {
@@ -19,5 +20,23 @@ public class NetworkUtils
 		}
 
 		return null;
+	}
+
+	public static void SendBytesToClient(byte[] bytes, TcpClient client)
+	{
+		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + 4))
+		{
+			using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+			{
+				int messageLength = bytes.Length;
+				binaryWriter.Write(messageLength);
+				binaryWriter.Write(bytes);
+			}
+			
+			byte[] buffer 			   = memoryStream.GetBuffer();
+			NetworkStream clientStream = client.GetStream();
+			clientStream.Write(buffer, 0 , buffer.Length);
+			clientStream.Flush();
+		}
 	}
 }
