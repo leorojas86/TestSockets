@@ -92,40 +92,23 @@ public class SocketServer
 		{
 			if(clientStream.DataAvailable)
 			{
-				//Debug.Log("clientStream.DataAvailable = " + clientStream.DataAvailable);
+				byte[] bytes 	= NetworkUtils.ReadBytesFromClient(tcpClient);
+				int bytesLength = bytes.Length;
 
-				using(MemoryStream memoryStream = new MemoryStream(1024))
+				using(MemoryStream memoryStream = new MemoryStream(bytes))
 				{
-					int bufferLength 	  = 0; 
-					byte[] readBuffer     = new byte[1024];
-					int numberOfBytesRead = 0;
-					
-					// Incoming message may be larger than the buffer size. 
-					while(clientStream.DataAvailable)
+					using(BinaryReader binaryReader = new BinaryReader(memoryStream))
 					{
-						numberOfBytesRead = clientStream.Read(readBuffer, 0, readBuffer.Length);
-						memoryStream.Write(readBuffer, 0, numberOfBytesRead);
-						bufferLength += numberOfBytesRead;
-					}
+						//Debug.Log("using(BinaryReader binaryReader = new BinaryReader(memoryStream))");
 
-					//Debug.Log("clientStream.DataAvailable = " + clientStream.DataAvailable);
-					byte[] buffer = memoryStream.GetBuffer();
-
-					using(MemoryStream memoryStream2 = new MemoryStream(buffer))
-					{
-						using(BinaryReader binaryReader = new BinaryReader(memoryStream2))
+						while(bytesLength > 0)
 						{
-							//Debug.Log("using(BinaryReader binaryReader = new BinaryReader(memoryStream))");
+							int messageLength = binaryReader.ReadInt32();//Read the message length
+							bytesLength	 	 -= 4;
+							byte[] message 	  = binaryReader.ReadBytes(messageLength);
+							bytesLength      -= messageLength;
 
-							while(bufferLength > 0)
-							{
-								int messageLength = binaryReader.ReadInt32();//Read the message length
-								bufferLength	 -= 4;
-								byte[] bytes 	  = binaryReader.ReadBytes(messageLength);
-								bufferLength     -= messageLength;
-
-								NotifyOnClientMessage(tcpClient, bytes);
-							}
+							NotifyOnClientMessage(tcpClient, message);
 						}
 					}
 				}
