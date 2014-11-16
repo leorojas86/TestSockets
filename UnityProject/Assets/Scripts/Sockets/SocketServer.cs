@@ -17,7 +17,7 @@ public class SocketServer
 	private List<TcpClient> _clients        		    	= new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    	= null;
 	public System.Action<TcpClient> OnClientConnected 	  	= null;
-	public System.Action<TcpClient, byte[]> OnClientMessage 	= null;
+	public System.Action<TcpClient, byte[]> OnClientMessage = null;
 
 	#endregion
 
@@ -55,6 +55,8 @@ public class SocketServer
 		_listenClientsThread = null;
 		_tcpClientsListener.Stop();
 		_tcpClientsListener = null;
+
+		_clients.Clear();
 	}
 
 	private void ProcessIncomingClientsThread()

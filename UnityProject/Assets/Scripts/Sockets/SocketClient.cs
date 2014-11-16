@@ -13,6 +13,7 @@ public class SocketClient
 
 	private TcpClient _tcpClient 	   = null;
 	private IPEndPoint _serverEndPoint = null;
+	private Thread _clientThread	   = null;
 
 	public System.Action<byte[]> OnServerMessage = null;
 
@@ -46,8 +47,8 @@ public class SocketClient
 		{
 			_tcpClient.Connect(_serverEndPoint);
 
-			Thread clientThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
-			clientThread.Start();
+			_clientThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
+			_clientThread.Start();
 
 			return true;
 		}
@@ -56,6 +57,15 @@ public class SocketClient
 			LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + port + " exception = " + e.ToString());
 			return false;
 		}
+	}
+
+	public void Disconnect()
+	{
+		_serverEndPoint = null;
+		_tcpClient.Close();
+		_tcpClient = null;
+		_clientThread.Abort();
+		_clientThread = null;
 	}
 
 	public void SendMessageToServer(string message)
