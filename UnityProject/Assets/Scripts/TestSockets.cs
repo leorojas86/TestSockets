@@ -46,6 +46,8 @@ public class TestSockets : MonoBehaviour
 	private void OnClientConnected(TcpClient client)
 	{
 		LogManager.Instance.LogMessage("OnClientConnected = " + client.ToString());
+
+		SocketsManager.Instance.Server.SendMessageToClient("Hello Client", client);
 	}
 
 	private void OnClientMessage(TcpClient client, byte[] message)
