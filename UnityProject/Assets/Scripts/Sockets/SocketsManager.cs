@@ -65,13 +65,12 @@ public class SocketsManager
 
 	#region Methods
 
-	public void StartServer()
+	public void StartServer(IPAddress serverAddress)
 	{
 		if(_server == null)
 		{
-			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-			_server 			= new SocketServer();
-			_server.StartServer(myAddress, _port);
+			_server = new SocketServer();
+			_server.StartServer(serverAddress, _port);
 		}
 		else
 			LogManager.Instance.LogMessage("Can not start server twice, please stop the server before starting a new one");

@@ -30,7 +30,8 @@ public class TestSockets : MonoBehaviour
 		{
 			if(SocketsManager.Instance.Server == null)
 			{
-				SocketsManager.Instance.StartServer();
+				IPAddress myAddress = NetworkUtils.GetMyIP4Address();
+				SocketsManager.Instance.StartServer(myAddress);
 				SocketsManager.Instance.Server.OnClientConnected = OnClientConnected;
 				SocketsManager.Instance.Server.OnClientMessage   = OnClientMessage;
 			}
@@ -47,8 +48,8 @@ public class TestSockets : MonoBehaviour
 		{
 			if(SocketsManager.Instance.Client == null)
 			{
-				IPAddress ip = IPAddress.Parse(connectToServerAddress);
-				SocketsManager.Instance.StartClient(ip);
+				IPAddress serverAddress = IPAddress.Parse(connectToServerAddress);
+				SocketsManager.Instance.StartClient(serverAddress);
 				SocketsManager.Instance.Client.OnServerMessage = OnServerMessage;
 				SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
 				SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");

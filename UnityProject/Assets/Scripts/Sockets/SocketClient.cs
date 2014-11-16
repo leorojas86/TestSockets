@@ -13,7 +13,7 @@ public class SocketClient
 
 	private TcpClient _tcpClient 	   = null;
 	private IPEndPoint _serverEndPoint = null;
-	private Thread _clientThread	   = null;
+	private Thread _listenServerMessagesThread	   = null;
 
 	public System.Action<byte[]> OnServerMessage = null;
 
@@ -47,8 +47,8 @@ public class SocketClient
 		{
 			_tcpClient.Connect(_serverEndPoint);
 
-			_clientThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
-			_clientThread.Start();
+			_listenServerMessagesThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
+			_listenServerMessagesThread.Start();
 
 			return true;
 		}
@@ -64,8 +64,8 @@ public class SocketClient
 		_serverEndPoint = null;
 		_tcpClient.Close();
 		_tcpClient = null;
-		_clientThread.Abort();
-		_clientThread = null;
+		_listenServerMessagesThread.Abort();
+		_listenServerMessagesThread = null;
 	}
 
 	public void SendMessageToServer(string message)

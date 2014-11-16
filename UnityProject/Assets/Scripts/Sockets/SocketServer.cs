@@ -13,11 +13,14 @@ public class SocketServer
 	#region Variables
 
 	private TcpListener _tcpClientsListener 		    	= null;
-	private Thread _listenClientsThread 			    	= null;
+	private Thread _listenIncomingClientsThread 			= null;
 	private List<TcpClient> _clients        		    	= new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    	= null;
+	private List<Thread> _listenClientMessagesThreads		= new List<Thread>();
+
 	public System.Action<TcpClient> OnClientConnected 	  	= null;
 	public System.Action<TcpClient, byte[]> OnClientMessage = null;
+
 
 	#endregion
 
@@ -44,17 +47,22 @@ public class SocketServer
 	{
 		_serverEndPoint 	 = new IPEndPoint(ip, port);
 		_tcpClientsListener  = new TcpListener(_serverEndPoint);
-		_listenClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
-		_listenClientsThread.Start();
+		_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
+		_listenIncomingClientsThread.Start();
 	}
 
 	public void StopServer()
 	{
 		_serverEndPoint = null;
-		_listenClientsThread.Abort();
-		_listenClientsThread = null;
+		_listenIncomingClientsThread.Abort();
+		_listenIncomingClientsThread = null;
 		_tcpClientsListener.Stop();
 		_tcpClientsListener = null;
+
+		foreach(Thread thread in _listenClientMessagesThreads)
+			thread.Abort();
+
+		_listenClientMessagesThreads.Clear();
 
 		_clients.Clear();
 	}
@@ -70,8 +78,9 @@ public class SocketServer
 			
 			//create a thread to handle communication 
 			//with connected client
-			Thread clientThread = new Thread(new ParameterizedThreadStart(ProcessClientMessagesThread));
-			clientThread.Start(client);
+			Thread listenClientMessagesThread = new Thread(new ParameterizedThreadStart(ProcessClientMessagesThread));
+			listenClientMessagesThread.Start(client);
+			_listenClientMessagesThreads.Add(listenClientMessagesThread);
 
 			_clients.Add(client);
 
