@@ -14,6 +14,7 @@ public class SocketServer
 
 	private TcpListener _tcpClientsListener 		    	= null;
 	private Thread _listenIncomingClientsThread 			= null;
+	private Thread _sendBradcastMessagesThread				= null;
 	private List<TcpClient> _clients        		    	= new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    	= null;
 	private List<Thread> _listenClientMessagesThreads		= new List<Thread>();
@@ -45,10 +46,12 @@ public class SocketServer
 
 	public void StartServer(IPAddress ip, int port)
 	{
-		_serverEndPoint 	 = new IPEndPoint(ip, port);
-		_tcpClientsListener  = new TcpListener(_serverEndPoint);
+		_serverEndPoint 	 		 = new IPEndPoint(ip, port);
+		_tcpClientsListener  		 = new TcpListener(_serverEndPoint);
 		_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
 		_listenIncomingClientsThread.Start();
+		_sendBradcastMessagesThread = new Thread(new ThreadStart(SendBroadcastMessages));
+		_sendBradcastMessagesThread.Start();
 	}
 
 	public void StopServer()
@@ -56,6 +59,8 @@ public class SocketServer
 		_serverEndPoint = null;
 		_listenIncomingClientsThread.Abort();
 		_listenIncomingClientsThread = null;
+		_sendBradcastMessagesThread.Abort();
+		_sendBradcastMessagesThread = null;
 		_tcpClientsListener.Stop();
 		_tcpClientsListener = null;
 
@@ -67,6 +72,30 @@ public class SocketServer
 		_clients.Clear();
 	}
 
+	private void SendBroadcastMessages()
+	{
+		Socket broadcastSocket 			= new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+		broadcastSocket.EnableBroadcast = true;
+		IPAddress broadcast    			= IPAddress.Parse("255.255.255.255");//Boadcast to all local network
+		IPEndPoint endPoint    			= new IPEndPoint(broadcast, _serverEndPoint.Port);
+		byte[] messageBytes    			= Encoding.ASCII.GetBytes("ServerIP:" + _serverEndPoint.Address);
+
+		try
+		{
+			while(true)
+			{
+				broadcastSocket.SendTo(messageBytes, endPoint);
+				Thread.Sleep(500);
+
+				//LogManager.Instance.LogMessage("Sending broadcast message");
+			}
+		}
+		catch(Exception e)
+		{
+			LogManager.Instance.LogMessage("Exception sending broadcast message = " + e.ToString());
+		}
+	}
+	
 	private void ProcessIncomingClientsThread()
 	{
 		_tcpClientsListener.Start();

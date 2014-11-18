@@ -30,8 +30,7 @@ public class TestSockets : MonoBehaviour
 		{
 			if(SocketsManager.Instance.Server == null)
 			{
-				IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-				SocketsManager.Instance.StartServer(myAddress);
+				SocketsManager.Instance.StartServer();
 				SocketsManager.Instance.Server.OnClientConnected = OnClientConnected;
 				SocketsManager.Instance.Server.OnClientMessage   = OnClientMessage;
 			}

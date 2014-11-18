@@ -11,9 +11,11 @@ public class SocketClient
 {
 	#region Variables
 
-	private TcpClient _tcpClient 	   = null;
-	private IPEndPoint _serverEndPoint = null;
-	private Thread _listenServerMessagesThread	   = null;
+	private TcpClient _tcpClient 	   		   = null;
+	private IPEndPoint _serverEndPoint 		   = null;
+	private Thread _listenServerMessagesThread = null;
+
+	private Thread _listenBroadcastMessagesThread = null;
 
 	public System.Action<byte[]> OnServerMessage = null;
 
@@ -38,6 +40,12 @@ public class SocketClient
 
 	#region Methods
 
+	public void FindServers()
+	{
+		_listenBroadcastMessagesThread = new Thread(new ThreadStart(ListenBroadcastMessages));
+		_listenBroadcastMessagesThread.Start();
+	}
+
 	public bool ConnectToServer(IPAddress serverAddress, int port)
 	{
 		_serverEndPoint = new IPEndPoint(serverAddress, port);
@@ -49,6 +57,8 @@ public class SocketClient
 
 			_listenServerMessagesThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
 			_listenServerMessagesThread.Start();
+
+			FindServers();
 
 			return true;
 		}
@@ -66,6 +76,12 @@ public class SocketClient
 		_tcpClient = null;
 		_listenServerMessagesThread.Abort();
 		_listenServerMessagesThread = null;
+
+		if(_listenBroadcastMessagesThread != null)
+		{
+			_listenBroadcastMessagesThread.Abort();
+			_listenBroadcastMessagesThread = null;
+		}
 	}
 
 	public void SendMessageToServer(string message)
@@ -119,5 +135,32 @@ public class SocketClient
 		}
 	}
 
+	private static void ListenBroadcastMessages() 
+	{
+		UdpClient listener = new UdpClient(SocketsManager.Instance.Port);
+		IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, SocketsManager.Instance.Port);
+		
+		try 
+		{
+			while (true) 
+			{
+				LogManager.Instance.LogMessage("Waiting for broadcast");
+				byte[] bytes = listener.Receive( ref groupEP);
+				
+				LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + Encoding.ASCII.GetString(bytes,0,bytes.Length) + "\n");
+			}
+			
+		} 
+		catch (Exception e) 
+		{
+			LogManager.Instance.LogMessage("ListenBroadcastMessages exception = " + e.ToString());
+		}
+		finally
+		{
+			listener.Close();
+		}
+	}
+
+	
 	#endregion
 }
