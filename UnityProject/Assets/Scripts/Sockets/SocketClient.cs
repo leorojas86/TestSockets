@@ -184,7 +184,7 @@ public class SocketClient
 		{
 			while (true) 
 			{
-				LogManager.Instance.LogMessage("Waiting for broadcast");
+				//LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes = listener.Receive( ref groupEP);
 				string data  = Encoding.ASCII.GetString(bytes,0,bytes.Length);
 
@@ -194,7 +194,7 @@ public class SocketClient
 					NotifyOnServerFound(IPAddress.Parse(ip), data);
 				}
 
-				LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + data + "\n");
+				//LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + data + "\n");
 			}
 			
 		} 
