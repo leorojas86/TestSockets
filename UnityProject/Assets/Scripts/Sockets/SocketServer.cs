@@ -14,7 +14,7 @@ public class SocketServer
 
 	private TcpListener _tcpClientsListener 		    	= null;
 	private Thread _listenIncomingClientsThread 			= null;
-	private Thread _sendBradcastMessagesThread				= null;
+	private Thread _sendServerInfoBroadcastThread				= null;
 	private List<TcpClient> _clients        		    	= new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    	= null;
 	private List<Thread> _listenClientMessagesThreads		= new List<Thread>();
@@ -22,6 +22,9 @@ public class SocketServer
 	public System.Action<TcpClient> OnClientConnected 	  	= null;
 	public System.Action<TcpClient, byte[]> OnClientMessage = null;
 
+	private bool _isStarted = false;
+
+	private bool _isBroadcastingServerInfo = false;
 
 	#endregion
 
@@ -31,7 +34,17 @@ public class SocketServer
 	{
 		get { return _serverEndPoint; }
 	}
-	
+
+	public bool IsStarted
+	{
+		get { return _isStarted; }
+	}
+
+	public bool IsBroadcastingServerInfo
+	{
+		get { return _isBroadcastingServerInfo; }
+	}
+
 	#endregion
 
 	#region Constructors
@@ -46,33 +59,72 @@ public class SocketServer
 
 	public void StartServer(IPAddress ip, int port)
 	{
-		_serverEndPoint 	 		 = new IPEndPoint(ip, port);
-		_tcpClientsListener  		 = new TcpListener(_serverEndPoint);
-		_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
-		_listenIncomingClientsThread.Start();
-		_sendBradcastMessagesThread = new Thread(new ThreadStart(SendBroadcastMessages));
-		_sendBradcastMessagesThread.Start();
+		if(!_isStarted)
+		{
+			_serverEndPoint 	 		 = new IPEndPoint(ip, port);
+			_tcpClientsListener  		 = new TcpListener(_serverEndPoint);
+			_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
+			_listenIncomingClientsThread.Start();
+
+			_isStarted = true;
+		}
+		else
+			LogManager.Instance.LogMessage("Can not start server twice");
+	}
+
+	public void StartServerInfoBroadcast()
+	{
+		if(!_isBroadcastingServerInfo)
+		{
+			if(_isStarted)
+			{
+				_sendServerInfoBroadcastThread = new Thread(new ThreadStart(SendServerInfoBroadcast));
+				_sendServerInfoBroadcastThread.Start();
+
+				_isBroadcastingServerInfo = true;
+			}
+			else
+				LogManager.Instance.LogMessage("Can not start broadcasting server info if the server is not started");
+		}
+		else
+			LogManager.Instance.LogMessage("Can not start broadcasting server info twice");
 	}
 
 	public void StopServer()
 	{
-		_serverEndPoint = null;
-		_listenIncomingClientsThread.Abort();
-		_listenIncomingClientsThread = null;
-		_sendBradcastMessagesThread.Abort();
-		_sendBradcastMessagesThread = null;
-		_tcpClientsListener.Stop();
-		_tcpClientsListener = null;
+		if(_isStarted)
+		{
+			_serverEndPoint = null;
+			_listenIncomingClientsThread.Abort();
+			_listenIncomingClientsThread = null;
+			_tcpClientsListener.Stop();
+			_tcpClientsListener = null;
 
-		foreach(Thread thread in _listenClientMessagesThreads)
-			thread.Abort();
+			foreach(Thread thread in _listenClientMessagesThreads)
+				thread.Abort();
 
-		_listenClientMessagesThreads.Clear();
+			_listenClientMessagesThreads.Clear();
 
-		_clients.Clear();
+			_clients.Clear();
+
+			StopBroadcastMessages();
+
+			_isStarted = false;
+		}
 	}
 
-	private void SendBroadcastMessages()
+	public void StopBroadcastMessages()
+	{
+		if(_isBroadcastingServerInfo)
+		{
+			_sendServerInfoBroadcastThread.Abort();
+			_sendServerInfoBroadcastThread = null;
+
+			_isBroadcastingServerInfo = false;
+		}
+	}
+
+	private void SendServerInfoBroadcast()
 	{
 		Socket broadcastSocket 			= new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 		broadcastSocket.EnableBroadcast = true;

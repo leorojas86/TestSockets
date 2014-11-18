@@ -8,8 +8,6 @@ public class TestSockets : MonoBehaviour
 {
 	private Vector2 scrollPosition = new Vector2(10, 270);
 
-	private string connectToServerAddress = NetworkUtils.GetMyIP4Address().ToString();
-
 	void OnGUI()
 	{
 		// Begin a scroll view. All rects are calculated automatically - 
@@ -24,45 +22,57 @@ public class TestSockets : MonoBehaviour
 		// End the scrollview we began above.
 		GUILayout.EndScrollView();
 
-		string serverButtonText = SocketsManager.Instance.Server == null ? "Start Server" : "Stop Server";
+		string serverButtonText = !SocketsManager.Instance.Server.IsStarted ? "Start Server" : "Stop Server";
 
 		if(GUI.Button(new Rect(10,370,100,30), serverButtonText))
 		{
-			if(SocketsManager.Instance.Server == null)
+			if(!SocketsManager.Instance.Server.IsStarted)
 			{
 				SocketsManager.Instance.StartServer();
 				SocketsManager.Instance.Server.OnClientConnected = OnClientConnected;
 				SocketsManager.Instance.Server.OnClientMessage   = OnClientMessage;
+				SocketsManager.Instance.Server.StartServerInfoBroadcast();
 			}
 			else
 				SocketsManager.Instance.StopServer();
 		}
 
-		if(SocketsManager.Instance.Server != null)
+		if(SocketsManager.Instance.Server.IsStarted)
 			GUI.Label(new Rect(190,370,400,30), "Server started at ip " + SocketsManager.Instance.Server.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Server.ServerEndPoint.Port);
 
-		string clientButtonText = SocketsManager.Instance.Client == null ? "Start Client" : "Stop Client";
+		string clientButtonText = !SocketsManager.Instance.Client.IsConnected ? "Connect Client" : "Disconnect Client";
 
 		if(GUI.Button(new Rect(10,410,100,30), clientButtonText))
 		{
-			if(SocketsManager.Instance.Client == null)
+			if(!SocketsManager.Instance.Client.IsConnected)
 			{
-				IPAddress serverAddress = IPAddress.Parse(connectToServerAddress);
-				SocketsManager.Instance.StartClient(serverAddress);
-				SocketsManager.Instance.Client.OnServerMessage = OnServerMessage;
-				SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
-				SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");
+				//IPAddress serverAddress = IPAddress.Parse(connectToServerAddress);
+				//StartClient(serverAddress);
+				SocketsManager.Instance.Client.OnServerFound = OnServerFound;
+				SocketsManager.Instance.FindServers();
 			}
 			else
-				SocketsManager.Instance.StopClient();
+				SocketsManager.Instance.DisconnectClientFromServer();
 		}
 
-		if(SocketsManager.Instance.Client != null)
+		if(SocketsManager.Instance.Client.IsConnected)
 			GUI.Label(new Rect(190,410,400,30), "Client connected to server at ip " + SocketsManager.Instance.Client.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Client.ServerEndPoint.Port);
-		else
-			connectToServerAddress = GUI.TextField(new Rect(130,410,100,30), connectToServerAddress);
 	}
 
+	private void OnServerFound(IPAddress serverAddress, string serverInfo)
+	{
+		SocketsManager.Instance.Client.OnServerFound = null;
+		ConnectClient(serverAddress);
+	}
+
+	private void ConnectClient(IPAddress serverAddress)
+	{
+		SocketsManager.Instance.ConnectClientToServer(serverAddress);
+		SocketsManager.Instance.Client.OnServerMessage = OnServerMessage;
+		SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
+		SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");
+	}
+	
 	private void OnClientConnected(TcpClient client)
 	{
 		LogManager.Instance.LogMessage("OnClientConnected = " + client.ToString());

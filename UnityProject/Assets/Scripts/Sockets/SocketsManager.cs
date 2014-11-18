@@ -15,9 +15,9 @@ public class SocketsManager
 
 	private static SocketsManager _instance = null;
 
-	private SocketServer _server = null;
+	private SocketServer _server = new SocketServer();
 
-	private SocketClient _client = null;
+	private SocketClient _client = new SocketClient();
 
 	private int _port = 3000;
 
@@ -67,45 +67,28 @@ public class SocketsManager
 
 	public void StartServer()
 	{
-		if(_server == null)
-		{
-			_server 			= new SocketServer();
-			IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-			_server.StartServer(myAddress, _port);
-		}
-		else
-			LogManager.Instance.LogMessage("Can not start server twice, please stop the server before starting a new one");
+		IPAddress myAddress = NetworkUtils.GetMyIP4Address();
+		_server.StartServer(myAddress, _port);
 	}
 
 	public void StopServer()
 	{
-		if(_server != null)
-		{
-			_server.StopServer();
-			_server = null;
-		}
+		_server.StopServer();
 	}
 
-	public void StartClient(IPAddress serverAddress)
+	public void FindServers()
 	{
-		if(_client == null)
-		{
-			_client = new SocketClient();
-
-			if(!_client.ConnectToServer(serverAddress, _port))
-				_client = null;
-		}
-		else
-			LogManager.Instance.LogMessage("Can not start client twice, please stop the server before starting a new one");
+		_client.FindServers(_port);
 	}
 
-	public void StopClient()
+	public void ConnectClientToServer(IPAddress serverAddress)
 	{
-		if(_client != null)
-		{
-			_client.Disconnect();
-			_client = null;
-		}
+		_client.ConnectToServer(serverAddress, _port);
+	}
+
+	public void DisconnectClientFromServer()
+	{
+		_client.Disconnect();
 	}
 
 	#endregion

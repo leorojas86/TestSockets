@@ -19,6 +19,12 @@ public class SocketClient
 
 	public System.Action<byte[]> OnServerMessage = null;
 
+	public System.Action<IPAddress, string> OnServerFound = null;
+
+	private bool _isConnected = false;
+
+	private bool _isFindingServers = false;
+
 	#endregion
 
 	#region Properties
@@ -27,7 +33,17 @@ public class SocketClient
 	{
 		get { return _serverEndPoint; }
 	}
-	
+
+	public bool IsConnected
+	{
+		get { return _isConnected; } 
+	}
+
+	public bool IsFindingServers
+	{
+		get { return _isFindingServers; }
+	}
+
 	#endregion
 
 	#region Constructors
@@ -40,47 +56,70 @@ public class SocketClient
 
 	#region Methods
 
-	public void FindServers()
+	public void FindServers(int port)
 	{
-		_listenBroadcastMessagesThread = new Thread(new ThreadStart(ListenBroadcastMessages));
-		_listenBroadcastMessagesThread.Start();
+		if(!_isFindingServers)
+		{
+			_listenBroadcastMessagesThread = new Thread(new ParameterizedThreadStart(ListenBroadcastMessages));
+			_listenBroadcastMessagesThread.Start(port);
+
+			_isFindingServers = true;
+		}
+	}
+
+	public void StopFindingServers()
+	{
+		if(_isFindingServers)
+		{
+			_listenBroadcastMessagesThread.Abort();
+			_listenBroadcastMessagesThread = null;
+
+			_isFindingServers = false;
+		}
 	}
 
 	public bool ConnectToServer(IPAddress serverAddress, int port)
 	{
-		_serverEndPoint = new IPEndPoint(serverAddress, port);
-		_tcpClient 		= new TcpClient();
-
-		try
+		if(!_isConnected)
 		{
-			_tcpClient.Connect(_serverEndPoint);
+			_serverEndPoint = new IPEndPoint(serverAddress, port);
+			_tcpClient 		= new TcpClient();
 
-			_listenServerMessagesThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
-			_listenServerMessagesThread.Start();
+			try
+			{
+				_tcpClient.Connect(_serverEndPoint);
 
-			FindServers();
+				_listenServerMessagesThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
+				_listenServerMessagesThread.Start();
 
-			return true;
+				_isConnected = true;
+				return true;
+			}
+			catch(Exception e)
+			{
+				LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + port + " exception = " + e.ToString());
+				return false;
+			}
+
+			StopFindingServers();
 		}
-		catch(Exception e)
-		{
-			LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + port + " exception = " + e.ToString());
-			return false;
-		}
+		else
+			LogManager.Instance.LogMessage("Can not connect to server twice");
+
+		return false;
 	}
 
 	public void Disconnect()
 	{
-		_serverEndPoint = null;
-		_tcpClient.Close();
-		_tcpClient = null;
-		_listenServerMessagesThread.Abort();
-		_listenServerMessagesThread = null;
-
-		if(_listenBroadcastMessagesThread != null)
+		if(_isConnected)
 		{
-			_listenBroadcastMessagesThread.Abort();
-			_listenBroadcastMessagesThread = null;
+			_serverEndPoint = null;
+			_tcpClient.Close();
+			_tcpClient = null;
+			_listenServerMessagesThread.Abort();
+			_listenServerMessagesThread = null;
+
+			_isConnected = false;
 		}
 	}
 
@@ -135,10 +174,11 @@ public class SocketClient
 		}
 	}
 
-	private static void ListenBroadcastMessages() 
+	private void ListenBroadcastMessages(object portParam) 
 	{
-		UdpClient listener = new UdpClient(SocketsManager.Instance.Port);
-		IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, SocketsManager.Instance.Port);
+		int port 		   = (int)portParam;
+		UdpClient listener = new UdpClient(port);
+		IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, port);
 		
 		try 
 		{
@@ -146,8 +186,15 @@ public class SocketClient
 			{
 				LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes = listener.Receive( ref groupEP);
-				
-				LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + Encoding.ASCII.GetString(bytes,0,bytes.Length) + "\n");
+				string data  = Encoding.ASCII.GetString(bytes,0,bytes.Length);
+
+				if(data.Contains("ServerIP:"))
+				{
+					string ip = data.Replace("ServerIP:", string.Empty);
+					NotifyOnServerFound(IPAddress.Parse(ip), data);
+				}
+
+				LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + data + "\n");
 			}
 			
 		} 
@@ -159,6 +206,12 @@ public class SocketClient
 		{
 			listener.Close();
 		}
+	}
+
+	private void NotifyOnServerFound(IPAddress serverIp, string data)
+	{
+		if(OnServerFound != null)
+			OnServerFound(serverIp, data);
 	}
 
 	
