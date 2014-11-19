@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.IO;
@@ -10,17 +11,47 @@ public class NetworkUtils
 {
 	public static IPAddress GetMyIP4Address()
 	{
-		IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
+		IPAddress address = null;
+
+		NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+		foreach(NetworkInterface networkInterface in interfaces)
+		{
+			Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType);
+
+			if(networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+			{
+				UnicastIPAddressInformationCollection unicastAddress = networkInterface.GetIPProperties().UnicastAddresses;
+
+				foreach(UnicastIPAddressInformation ipAddress in unicastAddress)
+				{
+					Debug.Log("ipAddress.Address.AddressFamily = " + ipAddress.Address.AddressFamily + " ipAddress.Address = " + ipAddress.Address);
+
+					if(ipAddress.Address.AddressFamily == AddressFamily.InterNetwork)
+					{
+						Debug.LogWarning("ipAddress.Address = " + ipAddress.Address);
+						address = ipAddress.Address;
+					}
+				}
+			}
+		}
+
+		return address;
+
+		/*IPHostEntry ipHostInfo = Dns.GetHostEntry("localhost");
 
 		for(int x = 0; x < ipHostInfo.AddressList.Length; x++)
 		{
 			IPAddress ipAddress = ipHostInfo.AddressList[x];
 
 			if(ipAddress.AddressFamily == AddressFamily.InterNetwork)
+			{
+				Debug.Log("ipAddress = " + ipAddress);
 				return ipAddress;
+			}
 		}
 
-		return null;
+		return null;*/
 	}
 
 	public static void SendBytesToClient(byte[] bytes, TcpClient client)
