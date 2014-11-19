@@ -93,6 +93,8 @@ public class SocketClient
 				_listenServerMessagesThread.Start();
 
 				_isConnected = true;
+
+				//StopFindingServers();
 				return true;
 			}
 			catch(Exception e)
@@ -100,8 +102,6 @@ public class SocketClient
 				LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + port + " exception = " + e.ToString());
 				return false;
 			}
-
-			StopFindingServers();
 		}
 		else
 			LogManager.Instance.LogMessage("Can not connect to server twice");
@@ -142,9 +142,7 @@ public class SocketClient
 	}
 
 	private void ProcessServerMessagesThread()
-	{
-		NetworkStream clientStream = _tcpClient.GetStream();
-		
+	{	
 		while(true)
 		{
 			byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);

@@ -24,6 +24,7 @@ public class SocketServer
 
 	private bool _isStarted = false;
 
+
 	private bool _isBroadcastingServerInfo = false;
 
 	#endregion
@@ -177,8 +178,7 @@ public class SocketServer
 
 	private void ProcessClientMessagesThread(object client)
 	{
-		TcpClient tcpClient		   = (TcpClient)client;
-		NetworkStream clientStream = tcpClient.GetStream();
+		TcpClient tcpClient = (TcpClient)client;
 
 		while(true)
 		{

@@ -10,7 +10,7 @@ public class NetworkUtils
 {
 	public static IPAddress GetMyIP4Address()
 	{
-		IPHostEntry ipHostInfo = Dns.Resolve(Dns.GetHostName());
+		IPHostEntry ipHostInfo = Dns.GetHostEntry(Dns.GetHostName());
 
 		for(int x = 0; x < ipHostInfo.AddressList.Length; x++)
 		{
