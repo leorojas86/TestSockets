@@ -172,8 +172,8 @@ public class SocketServer
 			{
 				List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
 
-				foreach(byte[] message in messages)
-					NotifyOnClientMessage(tcpClient, message);
+				for(int x = 0; x < messages.Count; x++)
+					NotifyOnClientMessage(tcpClient, messages[x]);
 			}
 		}
 	}
@@ -185,8 +185,8 @@ public class SocketServer
 
 	public void SendMessageToClients(byte[] message)
 	{
-		foreach(TcpClient client in _clients)
-			SendMessageToClient(message, client);
+		for(int x = 0; x < _clients.Count; x++)
+			SendMessageToClient(message, _clients[x]);
 	}
 
 	public void SendMessageToClient(string message, TcpClient client)

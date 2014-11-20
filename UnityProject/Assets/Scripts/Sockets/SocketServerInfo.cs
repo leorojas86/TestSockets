@@ -8,18 +8,20 @@ public class SocketServerInfo
 {
 	#region Variables
 
-	public IPAddress ip = null;
-	public string info  = null;
-	public bool listen  = true;
+	public string ip			= null;
+	public IPAddress ipAddress 	= null;
+	public string info  		= null;
+	public bool listen  		= true;
 
 	#endregion
 
 	#region Constructors
 	
-	public SocketServerInfo(IPAddress ip, string info)
+	public SocketServerInfo(string ip, string info)
 	{
-		this.ip   = ip;
-		this.info = info;
+		this.ip 	   = ip;
+		this.ipAddress = IPAddress.Parse(ip);
+		this.info 	   = info;
 	}
 
 	#endregion

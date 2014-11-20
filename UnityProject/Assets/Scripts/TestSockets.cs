@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Net.Sockets;
 using System.Text;
@@ -61,7 +61,7 @@ public class TestSockets : MonoBehaviour
 	private void OnServerFound(SocketServerInfo serverInfo)
 	{
 		SocketsManager.Instance.Client.StopFindingServers();
-		ConnectClient(serverInfo.ip);
+		ConnectClient(serverInfo.ipAddress);
 	}
 
 	private void ConnectClient(IPAddress serverAddress)

@@ -28,7 +28,7 @@ public class SocketClient
 
 	private bool _isFindingServers = false;
 
-	private Dictionary<string, SocketServerInfo> _foundServers = new Dictionary<string, SocketServerInfo>();
+	private List<SocketServerInfo> _foundServers = new List<SocketServerInfo>();
 
 	#endregion
 
@@ -49,7 +49,7 @@ public class SocketClient
 		get { return _isFindingServers; }
 	}
 
-	public Dictionary<string, SocketServerInfo> FoundServers
+	public List<SocketServerInfo> FoundServers
 	{
 		get { return _foundServers; }
 	}
@@ -166,8 +166,8 @@ public class SocketClient
 			{
 				List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
 
-				foreach(byte[] message in messages)
-					NotifyOnServerMessage(_tcpClient, message);
+				for(int x = 0; x < messages.Count; x++)
+					NotifyOnServerMessage(_tcpClient, messages[x]);
 			}
 		}
 	}
@@ -190,12 +190,14 @@ public class SocketClient
 				{
 					string ip = data.Replace("ServerIP:", string.Empty);
 
-					if(_foundServers.ContainsKey(ip))
-						_foundServers[ip].listen = true;
+					SocketServerInfo foundServerInfo = FindServerInfo(ip);
+
+					if(foundServerInfo != null)
+						foundServerInfo.listen = true;
 					else
 					{
-						SocketServerInfo serverInfo = new SocketServerInfo(IPAddress.Parse(ip), data);
-						_foundServers.Add(ip, serverInfo);
+						SocketServerInfo serverInfo = new SocketServerInfo(ip, data);
+						_foundServers.Add(serverInfo);
 						NotifyOnServerFound(serverInfo);
 					}
 				}
@@ -214,24 +216,40 @@ public class SocketClient
 		}
 	}
 
+	private SocketServerInfo FindServerInfo(string ip)
+	{
+		for(int x = 0; x < _foundServers.Count; x++)
+		{
+			SocketServerInfo serverInfo = _foundServers[x];
+
+			if(serverInfo.ip == ip)
+				return serverInfo;
+		}
+
+		return null;
+	}
+
 	private void CheckForLostServersThread()
 	{
 		while(_checkForLostServersThread != null)
 		{
-			List<string> lostServers = new List<string>();
+			List<SocketServerInfo> lostServers = new List<SocketServerInfo>();
 
-			foreach(KeyValuePair<string, SocketServerInfo> pair in _foundServers)
+			for(int x = 0; x < _foundServers.Count; x++)
 			{
-				if(pair.Value.listen)
-					pair.Value.listen = false;
+				SocketServerInfo serverInfo = _foundServers[x];
+
+				if(serverInfo.listen)
+					serverInfo.listen = false;
 				else
-					lostServers.Add(pair.Key);//If a server hasn't been listened in 1 second it is lost
+					lostServers.Add(serverInfo);//If a server hasn't been listened in 1 second it is lost
 			}
 
-			foreach(string lostServerIp in lostServers)
+			for(int x = 0; x < lostServers.Count; x++)
 			{
-				NotifyOnServerLost(_foundServers[lostServerIp]);
-				_foundServers.Remove(lostServerIp);
+				SocketServerInfo lostServer = lostServers[x];
+				NotifyOnServerLost(lostServer);
+				_foundServers.Remove(lostServer);
 			}
 
 			Thread.Sleep(1000);//Wait for 1 second

@@ -27,11 +27,13 @@ public class Lobby : MonoBehaviour
 		{
 			float y = 0;
 			
-			foreach(KeyValuePair<string, SocketServerInfo> pair in SocketsManager.Instance.Client.FoundServers)
+			for(int x = 0; x < SocketsManager.Instance.Client.FoundServers.Count; x++)
 			{
-				if(GUI.Button(new Rect(10, y, 100, 30), pair.Value.ip.ToString()))
+				SocketServerInfo serverInfo = SocketsManager.Instance.Client.FoundServers[x];
+
+				if(GUI.Button(new Rect(10, y, 100, 30), serverInfo.ipAddress.ToString()))
 				{
-					if(SocketsManager.Instance.ConnectClientToServer(pair.Value.ip))
+					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.ipAddress))
 						Application.LoadLevel("TableScene");
 				}
 				
