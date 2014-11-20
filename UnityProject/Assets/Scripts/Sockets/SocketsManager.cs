@@ -81,6 +81,11 @@ public class SocketsManager
 		_client.FindServers(_port, onServerFound, onServerLost);
 	}
 
+	public void StopFindingServers()
+	{
+		_client.StopFindingServers();
+	}
+
 	public bool ConnectClientToServer(IPAddress serverAddress)
 	{
 		return _client.ConnectToServer(serverAddress, _port);

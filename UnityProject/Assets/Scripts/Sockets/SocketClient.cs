@@ -16,7 +16,8 @@ public class SocketClient
 	private IPEndPoint _connectedServerEndPoint = null;
 	private Thread _listenServerMessagesThread  = null;
 
-	private Thread _listenBroadcastMessagesThread = null;
+	private Thread _listenServersBroadcastMessagesThread = null;
+	private Thread _checkForLostServersThread     		 = null;
 
 	public System.Action<byte[]> OnServerMessage = null;
 
@@ -69,8 +70,11 @@ public class SocketClient
 	{
 		if(!_isFindingServers)
 		{
-			_listenBroadcastMessagesThread = new Thread(new ParameterizedThreadStart(ListenBroadcastMessages));
-			_listenBroadcastMessagesThread.Start(port);
+			_listenServersBroadcastMessagesThread = new Thread(new ParameterizedThreadStart(ListenBroadcastMessages));
+			_listenServersBroadcastMessagesThread.Start(port);
+
+			_checkForLostServersThread = new Thread(new ThreadStart(CheckForLostServersThread));
+			_checkForLostServersThread.Start();
 
 			_isFindingServers = true;
 
@@ -83,7 +87,8 @@ public class SocketClient
 	{
 		if(_isFindingServers)
 		{
-			_listenBroadcastMessagesThread = null;
+			_listenServersBroadcastMessagesThread = null;
+			_checkForLostServersThread 			  = null;
 
 			_foundServers.Clear();
 
@@ -194,7 +199,7 @@ public class SocketClient
 		
 		try 
 		{
-			while (_listenBroadcastMessagesThread != null) 
+			while(_listenServersBroadcastMessagesThread != null) 
 			{
 				LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes = listener.Receive( ref groupEP);
@@ -205,7 +210,7 @@ public class SocketClient
 					string ip = data.Replace("ServerIP:", string.Empty);
 
 					if(_foundServers.ContainsKey(ip))
-						;//_foundServers[ip].lastListenTime = Time.time;
+						_foundServers[ip].listen = true;
 					else
 					{
 						SocketServerInfo serverInfo = new SocketServerInfo(IPAddress.Parse(ip), data);
@@ -228,10 +233,40 @@ public class SocketClient
 		}
 	}
 
+	private void CheckForLostServersThread()
+	{
+		while(_checkForLostServersThread != null)
+		{
+			List<string> lostServers = new List<string>();
+
+			foreach(KeyValuePair<string, SocketServerInfo> pair in _foundServers)
+			{
+				if(pair.Value.listen)
+					pair.Value.listen = false;
+				else
+					lostServers.Add(pair.Key);//If a server hasn't been listened in 1 second it is lost
+			}
+
+			foreach(string lostServerIp in lostServers)
+			{
+				NotifyOnServerLost(_foundServers[lostServerIp]);
+				_foundServers.Remove(lostServerIp);
+			}
+
+			Thread.Sleep(1000);
+		}
+	}
+
 	private void NotifyOnServerFound(SocketServerInfo serverInfo)
 	{
 		if(_onServerFound != null)
 			_onServerFound(serverInfo);
+	}
+
+	private void NotifyOnServerLost(SocketServerInfo serverInfo)
+	{
+		if(_onServerLost != null)
+			_onServerLost(serverInfo);
 	}
 
 	

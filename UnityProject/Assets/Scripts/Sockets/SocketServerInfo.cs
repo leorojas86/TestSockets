@@ -8,9 +8,9 @@ public class SocketServerInfo
 {
 	#region Variables
 
-	public IPAddress ip;
-	public string info;
-	public float lastListenTime;
+	public IPAddress ip = null;
+	public string info  = null;
+	public bool listen  = true;
 
 	#endregion
 

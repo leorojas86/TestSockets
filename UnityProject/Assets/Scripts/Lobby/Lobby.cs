@@ -14,23 +14,38 @@ public class Lobby : MonoBehaviour
 
 	void OnGUI()
 	{
-		float y = 0;
-
-		foreach(KeyValuePair<string, SocketServerInfo> pair in SocketsManager.Instance.Client.FoundServers)
+		if(SocketsManager.Instance.Server.IsStarted)
 		{
-			if(GUI.Button(new Rect(10, y, 100, 30), pair.Value.ip.ToString()))
+			GUI.Label(new Rect(10, 50, 100, 30), "Waiting for client");
+		}
+		else
+		{
+			float y = 0;
+			
+			foreach(KeyValuePair<string, SocketServerInfo> pair in SocketsManager.Instance.Client.FoundServers)
 			{
-				if(SocketsManager.Instance.ConnectClientToServer(pair.Value.ip))
-					Application.LoadLevel("TableScene");
+				if(GUI.Button(new Rect(10, y, 100, 30), pair.Value.ip.ToString()))
+				{
+					if(SocketsManager.Instance.ConnectClientToServer(pair.Value.ip))
+						Application.LoadLevel("TableScene");
+				}
+				
+				y += 50;
 			}
-
-			y += 50;
 		}
 
-		if(!SocketsManager.Instance.Server.IsStarted)
+		string text = SocketsManager.Instance.Server.IsStarted ? "Stop Game" : "Start Table Game";
+
+		if(GUI.Button(new Rect(10, 300, 100, 30), text))
 		{
-			if(GUI.Button(new Rect(10, 300, 100, 30), "Start Table Game"))
+			if(SocketsManager.Instance.Server.IsStarted)
 			{
+				SocketsManager.Instance.StopServer();
+				SocketsManager.Instance.FindServers(null, null);
+			}
+			else
+			{
+				SocketsManager.Instance.StopFindingServers();
 				SocketsManager.Instance.StartServer(OnClientConnected);
 				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast();
 			}
