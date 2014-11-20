@@ -17,7 +17,7 @@ public class NetworkUtils
 
 		foreach(NetworkInterface networkInterface in interfaces)
 		{
-			Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType);
+			//Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType);
 
 			if(networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
 			{
@@ -25,11 +25,11 @@ public class NetworkUtils
 
 				foreach(UnicastIPAddressInformation ipAddress in unicastAddress)
 				{
-					Debug.Log("ipAddress.Address.AddressFamily = " + ipAddress.Address.AddressFamily + " ipAddress.Address = " + ipAddress.Address);
+					//Debug.Log("ipAddress.Address.AddressFamily = " + ipAddress.Address.AddressFamily + " ipAddress.Address = " + ipAddress.Address);
 
 					if(ipAddress.Address.AddressFamily == AddressFamily.InterNetwork)
 					{
-						Debug.LogWarning("ipAddress.Address = " + ipAddress.Address);
+						//Debug.LogWarning("ipAddress.Address = " + ipAddress.Address);
 						address = ipAddress.Address;
 					}
 				}
