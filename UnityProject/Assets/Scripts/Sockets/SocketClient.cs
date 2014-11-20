@@ -136,7 +136,7 @@ public class SocketClient
 	{
 		if(_isConnected)
 		{
-			_connectedServerEndPoint = null;
+			_connectedServerEndPoint    = null;
 			_listenServerMessagesThread = null;
 			_tcpClient.Close();
 			_tcpClient = null;
