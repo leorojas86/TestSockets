@@ -19,7 +19,8 @@ public class SocketClient
 	private Thread _listenServersBroadcastMessagesThread = null;
 	private Thread _checkForLostServersThread     		 = null;
 
-	public System.Action<SocketMessage> OnServerMessage = null;
+	public System.Action<SocketMessage> OnServerMessage  = null;
+	public System.Action<TcpClient> OnServerDisconnected = null;
 
 	private System.Action<SocketServerInfo> _onServerFound = null;
 	private System.Action<SocketServerInfo> _onServerLost  = null;
@@ -160,15 +161,20 @@ public class SocketClient
 	{	
 		while(_listenServerMessagesThread != null)
 		{
-			byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
-
-			if(bytes != null)
+			if(NetworkUtils.CheckIfConnected(_tcpClient))
 			{
-				List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
+				byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
 
-				for(int x = 0; x < messages.Count; x++)
-					NotifyOnServerMessage(_tcpClient, messages[x]);
+				if(bytes != null)
+				{
+					List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
+
+					for(int x = 0; x < messages.Count; x++)
+						NotifyOnServerMessage(_tcpClient, messages[x]);
+				}
 			}
+			else
+				NotifyOnServerDisconnected();
 		}
 	}
 
@@ -282,6 +288,14 @@ public class SocketClient
 
 			SocketsManager.Instance.InvokeAction(OnServerMessage, socketMessage);
 			//OnServerMessage(socketMessage);
+		}
+	}
+
+	private void NotifyOnServerDisconnected()
+	{
+		if(OnServerDisconnected != null)
+		{
+			SocketsManager.Instance.InvokeAction(OnServerDisconnected, _tcpClient);
 		}
 	}
 

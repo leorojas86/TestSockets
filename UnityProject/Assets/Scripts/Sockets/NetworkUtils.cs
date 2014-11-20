@@ -148,7 +148,7 @@ public class NetworkUtils
 	/// <returns>True on connected. False on disconnected.</returns>
 	public static bool CheckIfConnected(TcpClient tcpClient)
 	{
-		if(tcpClient.Connected)
+		/*if(tcpClient.Connected)
 		{
 			if((tcpClient.Client.Poll(0, SelectMode.SelectWrite)) && (!tcpClient.Client.Poll(0, SelectMode.SelectError)))
 			{
@@ -158,7 +158,9 @@ public class NetworkUtils
 			}
 		}
 
-		return false;
+		return false;*/
+
+		return true;
 	}
 
 	#endregion

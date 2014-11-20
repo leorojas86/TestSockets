@@ -34,7 +34,8 @@ public class TestSockets : MonoBehaviour
 			if(!SocketsManager.Instance.Server.IsStarted)
 			{
 				SocketsManager.Instance.StartServer(OnClientConnected);
-				SocketsManager.Instance.Server.OnClientMessage = OnClientMessage;
+				SocketsManager.Instance.Server.OnClientMessage 		= OnClientMessage;
+				SocketsManager.Instance.Server.OnClientDisconnected = OnClientDisconnected;
 				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast();
 			}
 			else
@@ -62,6 +63,12 @@ public class TestSockets : MonoBehaviour
 	{
 		SocketsManager.Instance.Client.StopFindingServers();
 		ConnectClient(serverInfo.ipAddress);
+		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
+	}
+
+	private void OnServerDisconnected(TcpClient server)
+	{
+		LogManager.Instance.LogMessage("OnServerDisconnected");
 	}
 
 	private void ConnectClient(IPAddress serverAddress)
@@ -83,6 +90,11 @@ public class TestSockets : MonoBehaviour
 	{
 		string messageString = message.GetStringData();
 		LogManager.Instance.LogMessage("OnClientMessage = " + messageString);
+	}
+
+	private void OnClientDisconnected(TcpClient client)
+	{
+		LogManager.Instance.LogMessage("OnClientDisconnected");
 	}
 
 	private void OnServerMessage(SocketMessage message)

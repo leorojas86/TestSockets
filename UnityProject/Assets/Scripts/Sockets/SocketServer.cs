@@ -18,8 +18,9 @@ public class SocketServer
 	private List<TcpClient> _clients        		    = new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    = null;
 
-	private System.Action<TcpClient> _onClientConnected = null;
-	public System.Action<SocketMessage> OnClientMessage = null;
+	private System.Action<TcpClient> _onClientConnected  = null;
+	public System.Action<SocketMessage> OnClientMessage  = null;
+	public System.Action<TcpClient> OnClientDisconnected = null;
 
 	private bool _isStarted = false;
 	
@@ -166,17 +167,23 @@ public class SocketServer
 
 		while(_listenIncomingClientsThread != null)
 		{
-			byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
-
-			if(bytes != null)
+			if(NetworkUtils.CheckIfConnected(tcpClient))
 			{
-				List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
+				byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
 
-				for(int x = 0; x < messages.Count; x++)
-					NotifyOnClientMessage(tcpClient, messages[x]);
+				if(bytes != null)
+				{
+					List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
+
+					for(int x = 0; x < messages.Count; x++)
+						NotifyOnClientMessage(tcpClient, messages[x]);
+				}
 			}
+			else
+				NotifyOnClientDisconnected(tcpClient);
 		}
 	}
+
 	public void SendMessageToClients(string message)
 	{
 		byte[] bytes = NetworkUtils.GetMessageBytes(message);
@@ -217,6 +224,14 @@ public class SocketServer
 			SocketMessage socketMessage = new SocketMessage(client, message);
 			SocketsManager.Instance.InvokeAction(OnClientMessage, socketMessage);
 			//OnClientMessage(socketMessage);
+		}
+	}
+
+	private void NotifyOnClientDisconnected(TcpClient client)
+	{
+		if(OnClientDisconnected != null)
+		{
+			SocketsManager.Instance.InvokeAction(OnClientDisconnected, client);
 		}
 	}
 
