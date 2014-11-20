@@ -50,7 +50,12 @@ public class TestSockets : MonoBehaviour
 		}
 
 		if(SocketsManager.Instance.Server.IsStarted)
+		{
 			GUI.Label(new Rect(190,370,400,30), "Server started at ip " + SocketsManager.Instance.Server.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Server.ServerEndPoint.Port);
+
+			if(SocketsManager.Instance.Server.Clients.Count > 0 && GUI.Button(new Rect(500,370,200,30), "Send Message to Clients"))
+				SocketsManager.Instance.Server.SendMessageToClients("Test Message");
+		}
 
 		string clientButtonText = !SocketsManager.Instance.Client.IsConnected ? "Connect Client" : "Disconnect Client";
 
@@ -63,7 +68,12 @@ public class TestSockets : MonoBehaviour
 		}
 
 		if(SocketsManager.Instance.Client.IsConnected)
+		{
 			GUI.Label(new Rect(190,410,400,30), "Client connected to server at ip " + SocketsManager.Instance.Client.ConnectedServerEndPoint.Address + ", port " + SocketsManager.Instance.Client.ConnectedServerEndPoint.Port);
+
+			if(GUI.Button(new Rect(500,410,200,30), "Send Message to Server"))
+				SocketsManager.Instance.Client.SendMessageToServer("Test Message");
+		}
 	}
 
 	private void OnServerFound(SocketServerInfo serverInfo)

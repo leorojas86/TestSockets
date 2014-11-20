@@ -154,7 +154,15 @@ public class SocketClient
 
 	public void SendMessageToServer(byte[] bytes)
 	{
-		NetworkUtils.SendBytesToClient(bytes, _tcpClient);
+		try
+		{
+			NetworkUtils.SendBytesToClient(bytes, _tcpClient);
+		}
+		catch(IOException e)
+		{
+			NotifyOnServerDisconnected();
+			Disconnect();
+		}
 	}
 
 	private void ProcessServerMessagesThread()
@@ -163,20 +171,15 @@ public class SocketClient
 		{
 			while(_listenServerMessagesThread != null)
 			{
-				//if(_tcpClient.Connected)
+				byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
+
+				if(bytes != null)
 				{
-					byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
+					List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
 
-					if(bytes != null)
-					{
-						List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
-
-						for(int x = 0; x < messages.Count; x++)
-							NotifyOnServerMessage(_tcpClient, messages[x]);
-					}
+					for(int x = 0; x < messages.Count; x++)
+						NotifyOnServerMessage(_tcpClient, messages[x]);
 				}
-				//else
-					//NotifyOnServerDisconnected();
 			}
 		}
 		catch(Exception e)

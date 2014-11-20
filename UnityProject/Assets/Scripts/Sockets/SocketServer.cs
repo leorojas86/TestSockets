@@ -45,6 +45,11 @@ public class SocketServer
 		get { return _isBroadcastingServerInfo; }
 	}
 
+	public List<TcpClient> Clients
+	{
+		get { return _clients; }
+	}
+
 	#endregion
 
 	#region Constructors
@@ -212,7 +217,15 @@ public class SocketServer
 
 	public void SendMessageToClient(byte[] message, TcpClient client)
 	{
-		NetworkUtils.SendBytesToClient(message, client);
+		try
+		{
+			NetworkUtils.SendBytesToClient(message, client);
+		}
+		catch(IOException e)
+		{
+			NotifyOnClientDisconnected(client);
+			_clients.Remove(client);
+		}
 	}
 
 	private void NotifyOnClientConnected(TcpClient client)
