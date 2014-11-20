@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -176,7 +176,7 @@ public class SocketServer
 			{
 				//if(tcpClient.Connected)
 				//{
-					byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
+					byte[] bytes = NetworkUtils.ReadBytesFromTCPConnection(tcpClient);
 
 					if(bytes != null)
 					{
@@ -219,7 +219,7 @@ public class SocketServer
 	{
 		try
 		{
-			NetworkUtils.SendBytesToClient(message, client);
+			NetworkUtils.SendBytesToTCPConnection(message, client);
 		}
 		catch(IOException e)
 		{

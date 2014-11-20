@@ -61,7 +61,7 @@ public class NetworkUtils
 		return null;*/
 	}
 
-	public static void SendBytesToClient(byte[] bytes, TcpClient client)
+	public static void SendBytesToTCPConnection(byte[] bytes, TcpClient client)
 	{
 		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + BYTES_OF_INT))
 		{
@@ -91,7 +91,7 @@ public class NetworkUtils
 		return encoder.GetBytes(message);
 	}
 
-	public static byte[] ReadBytesFromClient(TcpClient tcpClient)
+	public static byte[] ReadBytesFromTCPConnection(TcpClient tcpClient)
 	{
 		NetworkStream clientStream = tcpClient.GetStream();
 
@@ -118,8 +118,7 @@ public class NetworkUtils
 	public static List<byte[]> GetMessagesFromBytes(byte[] bytes)
 	{
 		List<byte[]> messages = new List<byte[]>();
-
-		int bytesLength = bytes.Length;
+		int bytesLength 	  = bytes.Length;
 		
 		using(MemoryStream memoryStream = new MemoryStream(bytes))
 		{

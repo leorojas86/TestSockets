@@ -156,7 +156,7 @@ public class SocketClient
 	{
 		try
 		{
-			NetworkUtils.SendBytesToClient(bytes, _tcpClient);
+			NetworkUtils.SendBytesToTCPConnection(bytes, _tcpClient);
 		}
 		catch(IOException e)
 		{
@@ -171,7 +171,7 @@ public class SocketClient
 		{
 			while(_listenServerMessagesThread != null)
 			{
-				byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
+				byte[] bytes = NetworkUtils.ReadBytesFromTCPConnection(_tcpClient);
 
 				if(bytes != null)
 				{
