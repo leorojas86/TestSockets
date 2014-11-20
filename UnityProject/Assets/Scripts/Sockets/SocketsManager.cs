@@ -76,9 +76,9 @@ public class SocketsManager
 		_server.StopServer();
 	}
 
-	public void FindServers()
+	public void FindServers(System.Action<SocketServerInfo> onServerFound, System.Action<SocketServerInfo> onServerLost)
 	{
-		_client.FindServers(_port);
+		_client.FindServers(_port, onServerFound, onServerLost);
 	}
 
 	public void ConnectClientToServer(IPAddress serverAddress)

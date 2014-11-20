@@ -45,24 +45,19 @@ public class TestSockets : MonoBehaviour
 		if(GUI.Button(new Rect(10,410,100,30), clientButtonText))
 		{
 			if(!SocketsManager.Instance.Client.IsConnected)
-			{
-				//IPAddress serverAddress = IPAddress.Parse(connectToServerAddress);
-				//StartClient(serverAddress);
-				SocketsManager.Instance.Client.OnServerFound = OnServerFound;
-				SocketsManager.Instance.FindServers();
-			}
+				SocketsManager.Instance.FindServers(OnServerFound, null);
 			else
 				SocketsManager.Instance.DisconnectClientFromServer();
 		}
 
 		if(SocketsManager.Instance.Client.IsConnected)
-			GUI.Label(new Rect(190,410,400,30), "Client connected to server at ip " + SocketsManager.Instance.Client.ServerEndPoint.Address + ", port " + SocketsManager.Instance.Client.ServerEndPoint.Port);
+			GUI.Label(new Rect(190,410,400,30), "Client connected to server at ip " + SocketsManager.Instance.Client.ConnectedServerEndPoint.Address + ", port " + SocketsManager.Instance.Client.ConnectedServerEndPoint.Port);
 	}
 
-	private void OnServerFound(IPAddress serverAddress, string serverInfo)
+	private void OnServerFound(SocketServerInfo serverInfo)
 	{
-		SocketsManager.Instance.Client.OnServerFound = null;
-		ConnectClient(serverAddress);
+		SocketsManager.Instance.Client.StopFindingServers();
+		ConnectClient(serverInfo.ip);
 	}
 
 	private void ConnectClient(IPAddress serverAddress)

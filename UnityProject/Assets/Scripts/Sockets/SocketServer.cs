@@ -14,10 +14,9 @@ public class SocketServer
 
 	private TcpListener _tcpClientsListener 		    	= null;
 	private Thread _listenIncomingClientsThread 			= null;
-	private Thread _sendServerInfoBroadcastThread				= null;
+	private Thread _sendServerInfoBroadcastThread			= null;
 	private List<TcpClient> _clients        		    	= new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    	= null;
-	private List<Thread> _listenClientMessagesThreads		= new List<Thread>();
 
 	public System.Action<TcpClient> OnClientConnected 	  	= null;
 	public System.Action<TcpClient, byte[]> OnClientMessage = null;
@@ -96,15 +95,9 @@ public class SocketServer
 		if(_isStarted)
 		{
 			_serverEndPoint = null;
-			_listenIncomingClientsThread.Abort();
 			_listenIncomingClientsThread = null;
 			_tcpClientsListener.Stop();
 			_tcpClientsListener = null;
-
-			foreach(Thread thread in _listenClientMessagesThreads)
-				thread.Abort();
-
-			_listenClientMessagesThreads.Clear();
 
 			_clients.Clear();
 
@@ -118,10 +111,8 @@ public class SocketServer
 	{
 		if(_isBroadcastingServerInfo)
 		{
-			_sendServerInfoBroadcastThread.Abort();
 			_sendServerInfoBroadcastThread = null;
-
-			_isBroadcastingServerInfo = false;
+			_isBroadcastingServerInfo      = false;
 		}
 	}
 
@@ -135,7 +126,7 @@ public class SocketServer
 
 		try
 		{
-			while(true)
+			while(_sendServerInfoBroadcastThread != null)
 			{
 				broadcastSocket.SendTo(messageBytes, endPoint);
 				Thread.Sleep(500);
@@ -153,7 +144,7 @@ public class SocketServer
 	{
 		_tcpClientsListener.Start();
 		
-		while(_tcpClientsListener != null)
+		while(_listenIncomingClientsThread != null)
 		{
 			//blocks until a client has connected to the server
 			TcpClient client = _tcpClientsListener.AcceptTcpClient();
@@ -162,7 +153,6 @@ public class SocketServer
 			//with connected client
 			Thread listenClientMessagesThread = new Thread(new ParameterizedThreadStart(ProcessClientMessagesThread));
 			listenClientMessagesThread.Start(client);
-			_listenClientMessagesThreads.Add(listenClientMessagesThread);
 
 			_clients.Add(client);
 
@@ -180,7 +170,7 @@ public class SocketServer
 	{
 		TcpClient tcpClient = (TcpClient)client;
 
-		while(true)
+		while(_listenIncomingClientsThread != null)
 		{
 			byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
 

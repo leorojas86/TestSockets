@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 using System.Text;
 using System.Net.Sockets;
@@ -11,27 +12,30 @@ public class SocketClient
 {
 	#region Variables
 
-	private TcpClient _tcpClient 	   		   = null;
-	private IPEndPoint _serverEndPoint 		   = null;
-	private Thread _listenServerMessagesThread = null;
+	private TcpClient _tcpClient 	   		    = null;
+	private IPEndPoint _connectedServerEndPoint = null;
+	private Thread _listenServerMessagesThread  = null;
 
 	private Thread _listenBroadcastMessagesThread = null;
 
 	public System.Action<byte[]> OnServerMessage = null;
 
-	public System.Action<IPAddress, string> OnServerFound = null;
+	private System.Action<SocketServerInfo> _onServerFound = null;
+	private System.Action<SocketServerInfo> _onServerLost  = null;
 
 	private bool _isConnected = false;
 
 	private bool _isFindingServers = false;
 
+	private Dictionary<string, SocketServerInfo> _foundServers = new Dictionary<string, SocketServerInfo>();
+
 	#endregion
 
 	#region Properties
 	
-	public IPEndPoint ServerEndPoint
+	public IPEndPoint ConnectedServerEndPoint
 	{
-		get { return _serverEndPoint; }
+		get { return _connectedServerEndPoint; }
 	}
 
 	public bool IsConnected
@@ -42,6 +46,11 @@ public class SocketClient
 	public bool IsFindingServers
 	{
 		get { return _isFindingServers; }
+	}
+
+	public Dictionary<string, SocketServerInfo> FoundServers
+	{
+		get { return _foundServers; }
 	}
 
 	#endregion
@@ -56,7 +65,7 @@ public class SocketClient
 
 	#region Methods
 
-	public void FindServers(int port)
+	public void FindServers(int port, System.Action<SocketServerInfo> onServerFound, System.Action<SocketServerInfo> onServerLost)
 	{
 		if(!_isFindingServers)
 		{
@@ -64,6 +73,9 @@ public class SocketClient
 			_listenBroadcastMessagesThread.Start(port);
 
 			_isFindingServers = true;
+
+			_onServerFound = onServerFound;
+			_onServerLost  = onServerLost;
 		}
 	}
 
@@ -71,10 +83,14 @@ public class SocketClient
 	{
 		if(_isFindingServers)
 		{
-			_listenBroadcastMessagesThread.Abort();
 			_listenBroadcastMessagesThread = null;
 
+			_foundServers.Clear();
+
 			_isFindingServers = false;
+
+			_onServerFound = null;
+			_onServerLost  = null;
 		}
 	}
 
@@ -82,12 +98,12 @@ public class SocketClient
 	{
 		if(!_isConnected)
 		{
-			_serverEndPoint = new IPEndPoint(serverAddress, port);
-			_tcpClient 		= new TcpClient();
+			_connectedServerEndPoint = new IPEndPoint(serverAddress, port);
+			_tcpClient 				 = new TcpClient();
 
 			try
 			{
-				_tcpClient.Connect(_serverEndPoint);
+				_tcpClient.Connect(_connectedServerEndPoint);
 
 				_listenServerMessagesThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
 				_listenServerMessagesThread.Start();
@@ -100,7 +116,6 @@ public class SocketClient
 			catch(Exception e)
 			{
 				LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + port + " exception = " + e.ToString());
-				return false;
 			}
 		}
 		else
@@ -113,10 +128,9 @@ public class SocketClient
 	{
 		if(_isConnected)
 		{
-			_serverEndPoint = null;
+			_connectedServerEndPoint = null;
 			_tcpClient.Close();
 			_tcpClient = null;
-			_listenServerMessagesThread.Abort();
 			_listenServerMessagesThread = null;
 
 			_isConnected = false;
@@ -143,7 +157,7 @@ public class SocketClient
 
 	private void ProcessServerMessagesThread()
 	{	
-		while(true)
+		while(_listenServerMessagesThread != null)
 		{
 			byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
 
@@ -180,16 +194,24 @@ public class SocketClient
 		
 		try 
 		{
-			while (true) 
+			while (_listenBroadcastMessagesThread != null) 
 			{
-				//LogManager.Instance.LogMessage("Waiting for broadcast");
+				LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes = listener.Receive( ref groupEP);
 				string data  = Encoding.ASCII.GetString(bytes,0,bytes.Length);
 
 				if(data.Contains("ServerIP:"))
 				{
 					string ip = data.Replace("ServerIP:", string.Empty);
-					NotifyOnServerFound(IPAddress.Parse(ip), data);
+
+					if(_foundServers.ContainsKey(ip))
+						_foundServers[ip].lastListenTime = Time.time;
+					else
+					{
+						SocketServerInfo serverInfo = new SocketServerInfo(IPAddress.Parse(ip), data);
+						_foundServers.Add(ip, serverInfo);
+						NotifyOnServerFound(serverInfo);
+					}
 				}
 
 				//LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + data + "\n");
@@ -206,10 +228,10 @@ public class SocketClient
 		}
 	}
 
-	private void NotifyOnServerFound(IPAddress serverIp, string data)
+	private void NotifyOnServerFound(SocketServerInfo serverInfo)
 	{
-		if(OnServerFound != null)
-			OnServerFound(serverIp, data);
+		if(_onServerFound != null)
+			_onServerFound(serverInfo);
 	}
 
 	
