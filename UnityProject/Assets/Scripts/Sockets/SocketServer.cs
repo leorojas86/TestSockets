@@ -176,25 +176,10 @@ public class SocketServer
 
 			if(bytes != null)
 			{
-				int bytesLength = bytes.Length;
+				List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
 
-				using(MemoryStream memoryStream = new MemoryStream(bytes))
-				{
-					using(BinaryReader binaryReader = new BinaryReader(memoryStream))
-					{
-						//Debug.Log("using(BinaryReader binaryReader = new BinaryReader(memoryStream))");
-
-						while(bytesLength > 0)
-						{
-							int messageLength = binaryReader.ReadInt32();//Read the message length
-							bytesLength	 	 -= 4;
-							byte[] message 	  = binaryReader.ReadBytes(messageLength);
-							bytesLength      -= messageLength;
-
-							NotifyOnClientMessage(tcpClient, message);
-						}
-					}
-				}
+				foreach(byte[] message in messages)
+					NotifyOnClientMessage(tcpClient, message);
 			}
 		}
 	}

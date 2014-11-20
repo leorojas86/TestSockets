@@ -9,10 +9,17 @@ using System.IO;
 
 public class NetworkUtils 
 {
+	#region Constants
+
+	private const int BYTES_OF_INT = 4;
+
+	#endregion
+
+	#region Methods
+
 	public static IPAddress GetMyIP4Address()
 	{
-		IPAddress address = null;
-
+		IPAddress address 			  = null;
 		NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
 
 		foreach(NetworkInterface networkInterface in interfaces)
@@ -56,7 +63,7 @@ public class NetworkUtils
 
 	public static void SendBytesToClient(byte[] bytes, TcpClient client)
 	{
-		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + 4))
+		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + BYTES_OF_INT))
 		{
 			using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
 			{
@@ -67,7 +74,7 @@ public class NetworkUtils
 			
 			byte[] buffer 			   = memoryStream.GetBuffer();
 			NetworkStream clientStream = client.GetStream();
-			clientStream.Write(buffer, 0 , buffer.Length);
+			clientStream.Write(buffer, 0, buffer.Length);
 			clientStream.Flush();
 		}
 	}
@@ -121,7 +128,7 @@ public class NetworkUtils
 				while(bytesLength > 0)
 				{
 					int messageLength = binaryReader.ReadInt32();//Read the message length
-					bytesLength	 	 -= 4;
+					bytesLength	 	 -= BYTES_OF_INT;
 					byte[] data 	  = binaryReader.ReadBytes(messageLength);
 					bytesLength      -= messageLength;
 
@@ -132,4 +139,6 @@ public class NetworkUtils
 
 		return messages;
 	}
+
+	#endregion
 }
