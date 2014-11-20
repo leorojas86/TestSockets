@@ -161,6 +161,20 @@ public class NetworkUtils
 		return false;*/
 
 		return true;
+
+		/*IPGlobalProperties ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+
+		TcpConnectionInformation[] tcpConnections = ipProperties.GetActiveTcpConnections();
+
+		for(int x = 0; x < tcpConnections.Length; x++)
+		{
+			TcpConnectionInformation tcpConnectionInfo = tcpConnections[x];
+
+			if(tcpConnectionInfo.LocalEndPoint == tcpClient.Client.LocalEndPoint && tcpConnectionInfo.RemoteEndPoint == tcpClient.Client.RemoteEndPoint)
+				return tcpConnectionInfo.State == TcpState.Established;
+		}
+
+		return false;*/
 	}
 
 	#endregion

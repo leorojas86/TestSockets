@@ -159,22 +159,30 @@ public class SocketClient
 
 	private void ProcessServerMessagesThread()
 	{	
-		while(_listenServerMessagesThread != null)
+		try
 		{
-			if(NetworkUtils.CheckIfConnected(_tcpClient))
+			while(_listenServerMessagesThread != null)
 			{
-				byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
-
-				if(bytes != null)
+				if(NetworkUtils.CheckIfConnected(_tcpClient))
 				{
-					List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
 
-					for(int x = 0; x < messages.Count; x++)
-						NotifyOnServerMessage(_tcpClient, messages[x]);
+					byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
+
+					if(bytes != null)
+					{
+						List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
+
+						for(int x = 0; x < messages.Count; x++)
+							NotifyOnServerMessage(_tcpClient, messages[x]);
+					}
 				}
+				else
+					NotifyOnServerDisconnected();
 			}
-			else
-				NotifyOnServerDisconnected();
+		}
+		catch(Exception e)
+		{
+			LogManager.Instance.LogMessage("Exception while processing server messages, exception = " + e.ToString());
 		}
 	}
 

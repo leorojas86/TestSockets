@@ -8,6 +8,15 @@ public class TestSockets : MonoBehaviour
 {
 	private Vector2 scrollPosition = new Vector2(10, 270);
 
+	void Start()
+	{
+		SocketsManager.Instance.Server.OnClientMessage 		= OnClientMessage;
+		SocketsManager.Instance.Server.OnClientDisconnected = OnClientDisconnected;
+
+		SocketsManager.Instance.Client.OnServerMessage 		= OnServerMessage;
+		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
+	}
+
 	void Update()
 	{
 		SocketsManager.Instance.Update();
@@ -34,8 +43,6 @@ public class TestSockets : MonoBehaviour
 			if(!SocketsManager.Instance.Server.IsStarted)
 			{
 				SocketsManager.Instance.StartServer(OnClientConnected);
-				SocketsManager.Instance.Server.OnClientMessage 		= OnClientMessage;
-				SocketsManager.Instance.Server.OnClientDisconnected = OnClientDisconnected;
 				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast();
 			}
 			else
@@ -63,7 +70,6 @@ public class TestSockets : MonoBehaviour
 	{
 		SocketsManager.Instance.Client.StopFindingServers();
 		ConnectClient(serverInfo.ipAddress);
-		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
 	}
 
 	private void OnServerDisconnected(TcpClient server)
@@ -74,7 +80,6 @@ public class TestSockets : MonoBehaviour
 	private void ConnectClient(IPAddress serverAddress)
 	{
 		SocketsManager.Instance.ConnectClientToServer(serverAddress);
-		SocketsManager.Instance.Client.OnServerMessage = OnServerMessage;
 		SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
 		SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");
 	}
