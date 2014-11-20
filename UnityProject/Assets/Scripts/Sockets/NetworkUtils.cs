@@ -142,40 +142,5 @@ public class NetworkUtils
 		return messages;
 	}
 
-	/// <summary>
-	/// Checks the connection state
-	/// </summary>
-	/// <returns>True on connected. False on disconnected.</returns>
-	public static bool CheckIfConnected(TcpClient tcpClient)
-	{
-		/*if(tcpClient.Connected)
-		{
-			if((tcpClient.Client.Poll(0, SelectMode.SelectWrite)) && (!tcpClient.Client.Poll(0, SelectMode.SelectError)))
-			{
-				byte[] buffer = new byte[1];
-
-				return tcpClient.Client.Receive(buffer, SocketFlags.Peek) != 0;
-			}
-		}
-
-		return false;*/
-
-		return true;
-
-		/*IPGlobalProperties ipProperties = IPGlobalProperties.GetIPGlobalProperties();
-
-		TcpConnectionInformation[] tcpConnections = ipProperties.GetActiveTcpConnections();
-
-		for(int x = 0; x < tcpConnections.Length; x++)
-		{
-			TcpConnectionInformation tcpConnectionInfo = tcpConnections[x];
-
-			if(tcpConnectionInfo.LocalEndPoint == tcpClient.Client.LocalEndPoint && tcpConnectionInfo.RemoteEndPoint == tcpClient.Client.RemoteEndPoint)
-				return tcpConnectionInfo.State == TcpState.Established;
-		}
-
-		return false;*/
-	}
-
 	#endregion
 }

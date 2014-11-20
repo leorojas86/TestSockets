@@ -163,9 +163,8 @@ public class SocketClient
 		{
 			while(_listenServerMessagesThread != null)
 			{
-				if(NetworkUtils.CheckIfConnected(_tcpClient))
+				if(_tcpClient.Connected)
 				{
-
 					byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
 
 					if(bytes != null)

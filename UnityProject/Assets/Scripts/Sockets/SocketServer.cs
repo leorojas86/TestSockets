@@ -61,13 +61,13 @@ public class SocketServer
 	{
 		if(!_isStarted)
 		{
+			_isStarted = true;
+
 			_onClientConnected 			 = onClientConnected;
 			_serverEndPoint 	 		 = new IPEndPoint(ip, port);
 			_tcpClientsListener  		 = new TcpListener(_serverEndPoint);
 			_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
 			_listenIncomingClientsThread.Start();
-
-			_isStarted = true;
 		}
 		else
 			LogManager.Instance.LogMessage("Can not start server twice");
@@ -167,9 +167,9 @@ public class SocketServer
 		{
 			TcpClient tcpClient = (TcpClient)client;
 
-			while(_listenIncomingClientsThread != null)
+			while(_isStarted)
 			{
-				if(NetworkUtils.CheckIfConnected(tcpClient))
+				if(tcpClient.Connected)
 				{
 					byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
 
