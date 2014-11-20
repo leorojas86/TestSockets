@@ -205,7 +205,7 @@ public class SocketClient
 					string ip = data.Replace("ServerIP:", string.Empty);
 
 					if(_foundServers.ContainsKey(ip))
-						_foundServers[ip].lastListenTime = Time.time;
+						;//_foundServers[ip].lastListenTime = Time.time;
 					else
 					{
 						SocketServerInfo serverInfo = new SocketServerInfo(IPAddress.Parse(ip), data);

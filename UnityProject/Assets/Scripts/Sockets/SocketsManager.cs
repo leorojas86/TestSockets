@@ -65,10 +65,10 @@ public class SocketsManager
 
 	#region Methods
 
-	public void StartServer()
+	public void StartServer(System.Action<TcpClient> onClientConnected)
 	{
 		IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-		_server.StartServer(myAddress, _port);
+		_server.StartServer(myAddress, _port, onClientConnected);
 	}
 
 	public void StopServer()
@@ -81,9 +81,9 @@ public class SocketsManager
 		_client.FindServers(_port, onServerFound, onServerLost);
 	}
 
-	public void ConnectClientToServer(IPAddress serverAddress)
+	public bool ConnectClientToServer(IPAddress serverAddress)
 	{
-		_client.ConnectToServer(serverAddress, _port);
+		return _client.ConnectToServer(serverAddress, _port);
 	}
 
 	public void DisconnectClientFromServer()

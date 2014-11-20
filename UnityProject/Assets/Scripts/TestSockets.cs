@@ -28,10 +28,9 @@ public class TestSockets : MonoBehaviour
 		{
 			if(!SocketsManager.Instance.Server.IsStarted)
 			{
-				SocketsManager.Instance.StartServer();
-				SocketsManager.Instance.Server.OnClientConnected = OnClientConnected;
-				SocketsManager.Instance.Server.OnClientMessage   = OnClientMessage;
-				SocketsManager.Instance.Server.StartServerInfoBroadcast();
+				SocketsManager.Instance.StartServer(OnClientConnected);
+				SocketsManager.Instance.Server.OnClientMessage = OnClientMessage;
+				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast();
 			}
 			else
 				SocketsManager.Instance.StopServer();

@@ -18,12 +18,11 @@ public class SocketServer
 	private List<TcpClient> _clients        		    	= new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    	= null;
 
-	public System.Action<TcpClient> OnClientConnected 	  	= null;
+	private System.Action<TcpClient> _onClientConnected 	= null;
 	public System.Action<TcpClient, byte[]> OnClientMessage = null;
 
 	private bool _isStarted = false;
-
-
+	
 	private bool _isBroadcastingServerInfo = false;
 
 	#endregion
@@ -57,10 +56,11 @@ public class SocketServer
 
 	#region Methods
 
-	public void StartServer(IPAddress ip, int port)
+	public void StartServer(IPAddress ip, int port, System.Action<TcpClient> onClientConnected)
 	{
 		if(!_isStarted)
 		{
+			_onClientConnected 			 = onClientConnected;
 			_serverEndPoint 	 		 = new IPEndPoint(ip, port);
 			_tcpClientsListener  		 = new TcpListener(_serverEndPoint);
 			_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
@@ -72,7 +72,7 @@ public class SocketServer
 			LogManager.Instance.LogMessage("Can not start server twice");
 	}
 
-	public void StartServerInfoBroadcast()
+	public void StartSendingServerInfoBroadcast()
 	{
 		if(!_isBroadcastingServerInfo)
 		{
@@ -162,8 +162,8 @@ public class SocketServer
 
 	private void NotifyOnClientConnected(TcpClient client)
 	{
-		if(OnClientConnected != null)
-			OnClientConnected(client);
+		if(_onClientConnected != null)
+			_onClientConnected(client);
 	}
 
 	private void ProcessClientMessagesThread(object client)
