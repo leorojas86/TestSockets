@@ -107,4 +107,29 @@ public class NetworkUtils
 
 		return null;
 	}
+
+	public static List<byte[]> GetMessagesFromBytes(byte[] bytes)
+	{
+		List<byte[]> messages = new List<byte[]>();
+
+		int bytesLength = bytes.Length;
+		
+		using(MemoryStream memoryStream = new MemoryStream(bytes))
+		{
+			using(BinaryReader binaryReader = new BinaryReader(memoryStream))
+			{
+				while(bytesLength > 0)
+				{
+					int messageLength = binaryReader.ReadInt32();//Read the message length
+					bytesLength	 	 -= 4;
+					byte[] data 	  = binaryReader.ReadBytes(messageLength);
+					bytesLength      -= messageLength;
+
+					messages.Add(data);
+				}
+			}
+		}
+
+		return messages;
+	}
 }

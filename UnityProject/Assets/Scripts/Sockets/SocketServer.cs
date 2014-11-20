@@ -19,7 +19,7 @@ public class SocketServer
 	private IPEndPoint _serverEndPoint				    	= null;
 
 	private System.Action<TcpClient> _onClientConnected 	= null;
-	public System.Action<TcpClient, byte[]> OnClientMessage = null;
+	public System.Action<SocketMessage> OnClientMessage = null;
 
 	private bool _isStarted = false;
 	
@@ -202,7 +202,10 @@ public class SocketServer
 	private void NotifyOnClientMessage(TcpClient client, byte[] message)
 	{
 		if(OnClientMessage != null)
-			OnClientMessage(client, message);
+		{
+			SocketMessage socketMessage = new SocketMessage(client, message);
+			OnClientMessage(socketMessage);
+		}
 	}
 
 	public void SendMessageToClients(string message)

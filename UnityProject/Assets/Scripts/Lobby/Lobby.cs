@@ -54,7 +54,15 @@ public class Lobby : MonoBehaviour
 
 	private void OnClientConnected(TcpClient client)
 	{
-		Application.LoadLevel("TableScene");
+		//Application.LoadLevel("TableScene");
+		StartCoroutine(LoadSceneCoroutine("TableScene"));
+	}
+
+	private IEnumerator LoadSceneCoroutine(string scene)
+	{
+		yield return new WaitForEndOfFrame();
+
+		Application.LoadLevel(scene);
 	}
 
 	#endregion

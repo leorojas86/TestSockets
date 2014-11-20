@@ -74,15 +74,15 @@ public class TestSockets : MonoBehaviour
 		SocketsManager.Instance.Server.SendMessageToClient("Hello Client", client);
 	}
 
-	private void OnClientMessage(TcpClient client, byte[] message)
+	private void OnClientMessage(SocketMessage message)
 	{
-		string messageString = NetworkUtils.GetMessageString(message);
+		string messageString = message.GetStringData();
 		LogManager.Instance.LogMessage("OnClientMessage = " + messageString);
 	}
 
-	private void OnServerMessage(byte[] message)
+	private void OnServerMessage(SocketMessage message)
 	{
-		string messageString = NetworkUtils.GetMessageString(message);
+		string messageString = message.GetStringData();
 		LogManager.Instance.LogMessage("OnServerMessage = " + messageString);
 	}
 }

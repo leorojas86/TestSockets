@@ -19,7 +19,7 @@ public class SocketClient
 	private Thread _listenServersBroadcastMessagesThread = null;
 	private Thread _checkForLostServersThread     		 = null;
 
-	public System.Action<byte[]> OnServerMessage = null;
+	public System.Action<SocketMessage> OnServerMessage = null;
 
 	private System.Action<SocketServerInfo> _onServerFound = null;
 	private System.Action<SocketServerInfo> _onServerLost  = null;
@@ -80,6 +80,8 @@ public class SocketClient
 
 			_onServerFound = onServerFound;
 			_onServerLost  = onServerLost;
+
+			_foundServers.Clear();
 		}
 	}
 
@@ -154,10 +156,13 @@ public class SocketClient
 		NetworkUtils.SendBytesToClient(bytes, _tcpClient);
 	}
 
-	private void NotifyOnServerMessage(byte[] message)
+	private void NotifyOnServerMessage(TcpClient sender, byte[] data)
 	{
 		if(OnServerMessage != null)
-			OnServerMessage(message);
+		{
+			SocketMessage socketMessage = new SocketMessage(sender, data);
+			OnServerMessage(socketMessage);
+		}
 	}
 
 	private void ProcessServerMessagesThread()
@@ -168,25 +173,10 @@ public class SocketClient
 
 			if(bytes != null)
 			{
-				int bytesLength = bytes.Length;
-				
-				using(MemoryStream memoryStream = new MemoryStream(bytes))
-				{
-					using(BinaryReader binaryReader = new BinaryReader(memoryStream))
-					{
-						//Debug.Log("using(BinaryReader binaryReader = new BinaryReader(memoryStream))");
-						
-						while(bytesLength > 0)
-						{
-							int messageLength = binaryReader.ReadInt32();//Read the message length
-							bytesLength	 	 -= 4;
-							byte[] message 	  = binaryReader.ReadBytes(messageLength);
-							bytesLength      -= messageLength;
-							
-							NotifyOnServerMessage(message);
-						}
-					}
-				}
+				List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
+
+				foreach(byte[] message in messages)
+					NotifyOnServerMessage(_tcpClient, message);
 			}
 		}
 	}
