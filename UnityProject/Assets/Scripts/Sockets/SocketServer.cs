@@ -95,6 +95,8 @@ public class SocketServer
 	{
 		if(_isStarted)
 		{
+			_isStarted = false;
+
 			_serverEndPoint = null;
 			_listenIncomingClientsThread = null;
 			_tcpClientsListener.Stop();
@@ -103,8 +105,6 @@ public class SocketServer
 			_clients.Clear();
 
 			StopBroadcastMessages();
-
-			_isStarted = false;
 		}
 	}
 
@@ -169,8 +169,8 @@ public class SocketServer
 
 			while(_isStarted)
 			{
-				if(tcpClient.Connected)
-				{
+				//if(tcpClient.Connected)
+				//{
 					byte[] bytes = NetworkUtils.ReadBytesFromClient(tcpClient);
 
 					if(bytes != null)
@@ -180,9 +180,9 @@ public class SocketServer
 						for(int x = 0; x < messages.Count; x++)
 							NotifyOnClientMessage(tcpClient, messages[x]);
 					}
-				}
-				else
-					NotifyOnClientDisconnected(tcpClient);
+				//}
+				//else
+					//NotifyOnClientDisconnected(tcpClient);
 			}
 		}
 		catch(Exception e)

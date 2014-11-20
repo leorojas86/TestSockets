@@ -137,9 +137,9 @@ public class SocketClient
 		if(_isConnected)
 		{
 			_connectedServerEndPoint = null;
+			_listenServerMessagesThread = null;
 			_tcpClient.Close();
 			_tcpClient = null;
-			_listenServerMessagesThread = null;
 
 			_isConnected = false;
 		}
@@ -163,7 +163,7 @@ public class SocketClient
 		{
 			while(_listenServerMessagesThread != null)
 			{
-				if(_tcpClient.Connected)
+				//if(_tcpClient.Connected)
 				{
 					byte[] bytes = NetworkUtils.ReadBytesFromClient(_tcpClient);
 
@@ -175,8 +175,8 @@ public class SocketClient
 							NotifyOnServerMessage(_tcpClient, messages[x]);
 					}
 				}
-				else
-					NotifyOnServerDisconnected();
+				//else
+					//NotifyOnServerDisconnected();
 			}
 		}
 		catch(Exception e)
