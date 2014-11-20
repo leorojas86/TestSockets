@@ -156,15 +156,6 @@ public class SocketClient
 		NetworkUtils.SendBytesToClient(bytes, _tcpClient);
 	}
 
-	private void NotifyOnServerMessage(TcpClient sender, byte[] data)
-	{
-		if(OnServerMessage != null)
-		{
-			SocketMessage socketMessage = new SocketMessage(sender, data);
-			OnServerMessage(socketMessage);
-		}
-	}
-
 	private void ProcessServerMessagesThread()
 	{	
 		while(_listenServerMessagesThread != null)
@@ -193,7 +184,7 @@ public class SocketClient
 			{
 				LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes = listener.Receive( ref groupEP);
-				string data  = Encoding.ASCII.GetString(bytes,0,bytes.Length);
+				string data  = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
 				if(data.Contains("ServerIP:"))
 				{
@@ -243,20 +234,37 @@ public class SocketClient
 				_foundServers.Remove(lostServerIp);
 			}
 
-			Thread.Sleep(1000);
+			Thread.Sleep(1000);//Wait for 1 second
 		}
 	}
 
 	private void NotifyOnServerFound(SocketServerInfo serverInfo)
 	{
 		if(_onServerFound != null)
-			_onServerFound(serverInfo);
+		{
+			SocketsManager.Instance.InvokeAction(_onServerFound, serverInfo);
+			//_onServerFound(serverInfo);
+		}
 	}
 
 	private void NotifyOnServerLost(SocketServerInfo serverInfo)
 	{
 		if(_onServerLost != null)
-			_onServerLost(serverInfo);
+		{
+			SocketsManager.Instance.InvokeAction(_onServerLost, serverInfo);
+			//_onServerLost(serverInfo);
+		}
+	}
+
+	private void NotifyOnServerMessage(TcpClient sender, byte[] data)
+	{
+		if(OnServerMessage != null)
+		{
+			SocketMessage socketMessage = new SocketMessage(sender, data);
+
+			SocketsManager.Instance.InvokeAction(OnServerMessage, socketMessage);
+			//OnServerMessage(socketMessage);
+		}
 	}
 
 	

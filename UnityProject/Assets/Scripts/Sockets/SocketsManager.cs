@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -11,15 +12,42 @@ using System;
 /// </summary>
 public class SocketsManager 
 {
+	#region Structs
+
+	public interface IActionInvoker
+	{
+		void Invoke();
+	}
+
+	public class InvokeActionData<T> : IActionInvoker
+	{
+		public Action<T> action = null;
+		public T actionParam;
+
+		public InvokeActionData(Action<T> action, T actionParam)
+		{
+			this.action 	 = action;
+			this.actionParam = actionParam;
+		}
+
+		public void Invoke()
+		{
+			action(actionParam);
+		}
+	}
+
+	#endregion
+
 	#region Variables
 
 	private static SocketsManager _instance = null;
 
 	private SocketServer _server = new SocketServer();
-
 	private SocketClient _client = new SocketClient();
 
 	private int _port = 3000;
+
+	private List<IActionInvoker> _invokingActions = new List<IActionInvoker>();
 
 	#endregion
 
@@ -94,6 +122,23 @@ public class SocketsManager
 	public void DisconnectClientFromServer()
 	{
 		_client.Disconnect();
+	}
+
+	public void Update()
+	{
+		for(int x = 0; x < _invokingActions.Count; x++)
+		{
+			IActionInvoker invokeAction = _invokingActions[x];
+			invokeAction.Invoke();
+		}
+
+		_invokingActions.Clear();
+	}
+
+	public void InvokeAction<T>(Action<T> action, T param)
+	{
+		InvokeActionData<T> invokeData = new InvokeActionData<T>(action, param);
+		_invokingActions.Add(invokeData);
 	}
 
 	#endregion

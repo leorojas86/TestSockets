@@ -8,6 +8,11 @@ public class TestSockets : MonoBehaviour
 {
 	private Vector2 scrollPosition = new Vector2(10, 270);
 
+	void Update()
+	{
+		SocketsManager.Instance.Update();
+	}
+
 	void OnGUI()
 	{
 		// Begin a scroll view. All rects are calculated automatically - 

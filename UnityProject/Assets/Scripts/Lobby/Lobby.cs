@@ -12,6 +12,11 @@ public class Lobby : MonoBehaviour
 		SocketsManager.Instance.FindServers(null, null);
 	}
 
+	void Update()
+	{
+		SocketsManager.Instance.Update();
+	}
+
 	void OnGUI()
 	{
 		if(SocketsManager.Instance.Server.IsStarted)

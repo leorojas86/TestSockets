@@ -137,7 +137,7 @@ public class NetworkUtils
 			}
 		}
 
-		Debug.Log("messages.Count = " + messages.Count);
+		//Debug.Log("messages.Count = " + messages.Count);
 
 		return messages;
 	}

@@ -12,13 +12,13 @@ public class SocketServer
 {
 	#region Variables
 
-	private TcpListener _tcpClientsListener 		    	= null;
-	private Thread _listenIncomingClientsThread 			= null;
-	private Thread _sendServerInfoBroadcastThread			= null;
-	private List<TcpClient> _clients        		    	= new List<TcpClient>();
-	private IPEndPoint _serverEndPoint				    	= null;
+	private TcpListener _tcpClientsListener 		    = null;
+	private Thread _listenIncomingClientsThread 		= null;
+	private Thread _sendServerInfoBroadcastThread		= null;
+	private List<TcpClient> _clients        		    = new List<TcpClient>();
+	private IPEndPoint _serverEndPoint				    = null;
 
-	private System.Action<TcpClient> _onClientConnected 	= null;
+	private System.Action<TcpClient> _onClientConnected = null;
 	public System.Action<SocketMessage> OnClientMessage = null;
 
 	private bool _isStarted = false;
@@ -129,7 +129,7 @@ public class SocketServer
 			while(_sendServerInfoBroadcastThread != null)
 			{
 				broadcastSocket.SendTo(messageBytes, endPoint);
-				Thread.Sleep(500);
+				Thread.Sleep(500);//Sent message every 0.5 seconds
 
 				//LogManager.Instance.LogMessage("Sending broadcast message");
 			}
@@ -160,12 +160,6 @@ public class SocketServer
 		}
 	}
 
-	private void NotifyOnClientConnected(TcpClient client)
-	{
-		if(_onClientConnected != null)
-			_onClientConnected(client);
-	}
-
 	private void ProcessClientMessagesThread(object client)
 	{
 		TcpClient tcpClient = (TcpClient)client;
@@ -183,16 +177,6 @@ public class SocketServer
 			}
 		}
 	}
-
-	private void NotifyOnClientMessage(TcpClient client, byte[] message)
-	{
-		if(OnClientMessage != null)
-		{
-			SocketMessage socketMessage = new SocketMessage(client, message);
-			OnClientMessage(socketMessage);
-		}
-	}
-
 	public void SendMessageToClients(string message)
 	{
 		byte[] bytes = NetworkUtils.GetMessageBytes(message);
@@ -217,6 +201,24 @@ public class SocketServer
 		NetworkUtils.SendBytesToClient(message, client);
 	}
 
+	private void NotifyOnClientConnected(TcpClient client)
+	{
+		if(_onClientConnected != null)
+		{
+			SocketsManager.Instance.InvokeAction(_onClientConnected, client);
+			//_onClientConnected(client);
+		}
+	}
+
+	private void NotifyOnClientMessage(TcpClient client, byte[] message)
+	{
+		if(OnClientMessage != null)
+		{
+			SocketMessage socketMessage = new SocketMessage(client, message);
+			SocketsManager.Instance.InvokeAction(OnClientMessage, socketMessage);
+			//OnClientMessage(socketMessage);
+		}
+	}
 
 	#endregion
 }
