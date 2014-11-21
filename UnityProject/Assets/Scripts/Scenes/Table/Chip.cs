@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Net.Sockets;
 
 public class Chip : MonoBehaviour 
 {
@@ -23,9 +24,32 @@ public class Chip : MonoBehaviour
 	// Use this for initialization
 	void Start() 
 	{
-	
+		SocketsManager.Instance.Client.OnServerMessage = OnSocketMessage;
+		SocketsManager.Instance.Server.OnClientMessage = OnSocketMessage;
+
+		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
+		SocketsManager.Instance.Server.OnClientDisconnected = OnClientDisconnected;
 	}
 
+	private void OnServerDisconnected(TcpClient connection)
+	{
+		Application.LoadLevel("LobbyScene");
+	}
+
+	private void OnClientDisconnected(TcpClient connection)
+	{
+		Application.LoadLevel("LobbyScene");
+	}
+
+	private void OnSocketMessage(SocketMessage message)
+	{
+		string messageString      = message.GetStringData();
+
+		//Debug.Log("OnSocketMessage = " + messageString);
+
+		ChipMovement chipMovement = ChipMovement.FromString(messageString);
+		transform.localPosition   = chipMovement.GetPosition();
+	}
 	
 	// Update is called once per frame
 	void Update() 
@@ -33,6 +57,8 @@ public class Chip : MonoBehaviour
 		CheckForStartDragging();
 		UpdateDragging();
 		CheckForStopDragging();
+
+		SocketsManager.Instance.Update();
 	}
 
 	private void CheckForStartDragging()
@@ -56,7 +82,7 @@ public class Chip : MonoBehaviour
 	{
 		if(_isDragging)
 		{
-			RaycastHit hit2  = new RaycastHit();
+			RaycastHit hit2 = new RaycastHit();
 			Ray ray2 		= Camera.main.ScreenPointToRay(Input.mousePosition);
 			
 			if(tableCollider.Raycast(ray2, out hit2, 100.0f))
@@ -69,6 +95,22 @@ public class Chip : MonoBehaviour
 				Vector3 hitPosition 		= transform.parent.InverseTransformPoint(hit2.point);
 				hitPosition.z				= transform.localPosition.z;
 				transform.localPosition 	= hitPosition;
+
+				ChipMovement chipMovement = new ChipMovement(hitPosition);
+				string message 			  = ChipMovement.ToString(chipMovement);
+
+				//Debug.Log("Sending message = " + message);
+
+				if(SocketsManager.Instance.Client.IsConnected)
+				{
+					//Debug.Log("SendMessageToServer");
+					SocketsManager.Instance.Client.SendMessageToServer(message);
+				}
+				else if(SocketsManager.Instance.Server.IsStarted)
+				{
+					//Debug.Log("SendMessageToClients");
+					SocketsManager.Instance.Server.SendMessageToClients(message);
+				}
 			}
 		}
 	}
