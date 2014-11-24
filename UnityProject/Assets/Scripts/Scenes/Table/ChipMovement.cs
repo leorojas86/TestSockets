@@ -57,6 +57,7 @@ public class ChipMovement
 	
 	public static ChipMovement FromString(string data)
 	{
+		Debug.Log("FromString data = " + data);
 		return LitJson.JsonMapper.ToObject<ChipMovement>(data);
 	}
 	

@@ -19,13 +19,32 @@ public class NetworkUtils
 
 	public static IPAddress GetMyIP4Address()
 	{
-		#if UNITY_IOS
+		#if UNITY_ANDROID
+			string hostName 	   = Dns.GetHostName();
+			//Debug.Log("hostName = " + hostName);
+			IPHostEntry ipHostInfo = Dns.GetHostEntry(hostName);
+			IPAddress address = null;
+			
+			for(int x = 0; x < ipHostInfo.AddressList.Length; x++)
+			{
+				IPAddress ipAddress = ipHostInfo.AddressList[x];
+				
+				if(ipAddress.AddressFamily == AddressFamily.InterNetwork)
+				{
+					//Debug.Log("ipAddress = " + ipAddress);
+					address =  ipAddress;
+					return address;
+				}
+			}
+			
+			return address;
+		#else
 			IPAddress address 			  = null;
 			NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
 			
 			foreach(NetworkInterface networkInterface in interfaces)
 			{
-				//Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType);
+				//Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType + " IsReceiveOnly = " + networkInterface.IsReceiveOnly + " " + networkInterface.);
 				
 				if(networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
 				{
@@ -39,32 +58,16 @@ public class NetworkUtils
 						{
 							//Debug.LogWarning("ipAddress.Address = " + ipAddress.Address);
 							address = ipAddress.Address;
+							return address;
 						}
 					}
 				}
 			}
 			
 			return address;
-		#else
-			string hostName 	   = Dns.GetHostName();
-			//Debug.Log("hostName = " + hostName);
-			IPHostEntry ipHostInfo = Dns.GetHostEntry(hostName);
-			
-			for(int x = 0; x < ipHostInfo.AddressList.Length; x++)
-			{
-				IPAddress ipAddress = ipHostInfo.AddressList[x];
-				
-				if(ipAddress.AddressFamily == AddressFamily.InterNetwork)
-				{
-					Debug.Log("ipAddress = " + ipAddress);
-					return ipAddress;
-				}
-			}
-			
-			return null;
 		#endif
 	}
-
+	
 	public static void SendBytesToTCPConnection(byte[] bytes, TcpClient client)
 	{
 		using(MemoryStream memoryStream = new MemoryStream(bytes.Length + BYTES_OF_INT))
