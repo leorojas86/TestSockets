@@ -19,46 +19,50 @@ public class NetworkUtils
 
 	public static IPAddress GetMyIP4Address()
 	{
-		IPAddress address 			  = null;
-		NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-		foreach(NetworkInterface networkInterface in interfaces)
-		{
-			//Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType);
-
-			if(networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+		#if UNITY_IOS
+			IPAddress address 			  = null;
+			NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+			
+			foreach(NetworkInterface networkInterface in interfaces)
 			{
-				UnicastIPAddressInformationCollection unicastAddress = networkInterface.GetIPProperties().UnicastAddresses;
-
-				foreach(UnicastIPAddressInformation ipAddress in unicastAddress)
+				//Debug.Log("networkInterface.Description = " + networkInterface.Description + " networkInterface.Name = " + networkInterface.Name + " networkInterface.NetworkInterfaceType = " + networkInterface.NetworkInterfaceType);
+				
+				if(networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
 				{
-					//Debug.Log("ipAddress.Address.AddressFamily = " + ipAddress.Address.AddressFamily + " ipAddress.Address = " + ipAddress.Address);
-
-					if(ipAddress.Address.AddressFamily == AddressFamily.InterNetwork)
+					UnicastIPAddressInformationCollection unicastAddress = networkInterface.GetIPProperties().UnicastAddresses;
+					
+					foreach(UnicastIPAddressInformation ipAddress in unicastAddress)
 					{
-						//Debug.LogWarning("ipAddress.Address = " + ipAddress.Address);
-						address = ipAddress.Address;
+						//Debug.Log("ipAddress.Address.AddressFamily = " + ipAddress.Address.AddressFamily + " ipAddress.Address = " + ipAddress.Address);
+						
+						if(ipAddress.Address.AddressFamily == AddressFamily.InterNetwork)
+						{
+							//Debug.LogWarning("ipAddress.Address = " + ipAddress.Address);
+							address = ipAddress.Address;
+						}
 					}
 				}
 			}
-		}
-
-		return address;
-
-		/*IPHostEntry ipHostInfo = Dns.GetHostEntry("localhost");
-
-		for(int x = 0; x < ipHostInfo.AddressList.Length; x++)
-		{
-			IPAddress ipAddress = ipHostInfo.AddressList[x];
-
-			if(ipAddress.AddressFamily == AddressFamily.InterNetwork)
+			
+			return address;
+		#else
+			string hostName 	   = Dns.GetHostName();
+			//Debug.Log("hostName = " + hostName);
+			IPHostEntry ipHostInfo = Dns.GetHostEntry(hostName);
+			
+			for(int x = 0; x < ipHostInfo.AddressList.Length; x++)
 			{
-				Debug.Log("ipAddress = " + ipAddress);
-				return ipAddress;
+				IPAddress ipAddress = ipHostInfo.AddressList[x];
+				
+				if(ipAddress.AddressFamily == AddressFamily.InterNetwork)
+				{
+					Debug.Log("ipAddress = " + ipAddress);
+					return ipAddress;
+				}
 			}
-		}
-
-		return null;*/
+			
+			return null;
+		#endif
 	}
 
 	public static void SendBytesToTCPConnection(byte[] bytes, TcpClient client)
