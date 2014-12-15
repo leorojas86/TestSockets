@@ -10,41 +10,68 @@ public class MultiplayerMessage
 	{
 		Unknown,
 		Input,
-		Action
+		Action,
+		Message
 	}
 
 	#endregion
 
 	#region Variables
 
-	public Type type = 0;
+	public Type type   = Type.Unknown;
+	public int subType = 0;
 
 	#endregion
 
 	#region Constructors
 
-	public MultiplayerMessage(Type type)
+	public MultiplayerMessage(Type type, int subType)
 	{
-		this.type = type;
+		this.type 		= type;
+		this.subType 	= subType;
+	}
+
+	public MultiplayerMessage()
+	{
 	}
 
 	#endregion
 
 	#region Methods
 
-	public virtual byte[] ToBytes()
+	public byte[] ToBytes()
 	{
-		Debug.Log("This method must be overriden by children");
-		return null;
+		using(MemoryStream memoryStream = new MemoryStream())
+		{
+			using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
+			{
+				Write(binaryWriter);
+				return memoryStream.GetBuffer();
+			}
+		}
 	}
 
-	public virtual void FromBytes(byte[] bytes)
+	protected virtual void Write(BinaryWriter binaryWriter)
+	{
+		binaryWriter.Write((int)type);
+		binaryWriter.Write((int)subType);
+	}
+
+	public bool FromBytes(byte[] bytes)
 	{
 		using(MemoryStream memoryStream = new MemoryStream(bytes))
 		{
 			using(BinaryReader binaryReader = new BinaryReader(memoryStream))
-				type = (Type)binaryReader.ReadInt32();
+				return Read(binaryReader);
 		}
+	}
+
+	protected virtual bool Read(BinaryReader binaryReader)
+	{
+		type 		= (Type)binaryReader.ReadInt32();
+		int subType = binaryReader.ReadInt32();
+		
+		return subType == this.subType;
 	}
 
 	#endregion

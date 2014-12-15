@@ -1,13 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameAction : MultiplayerMessage 
+public abstract class GameAction : MultiplayerMessage 
 {
 	#region Constructors
 
-	public GameAction():base(MultiplayerMessage.Type.Action)
+	public GameAction(int subType):base(MultiplayerMessage.Type.Action, subType)
 	{
 	}
+
+	#endregion
+
+	#region Methods
+
+	//public abstract GameAction Clone();
 
 	#endregion
 }
