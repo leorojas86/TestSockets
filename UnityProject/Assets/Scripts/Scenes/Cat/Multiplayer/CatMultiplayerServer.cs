@@ -55,7 +55,7 @@ public class CatMultiplayerServer : MultiplayerManager
 	private Player _player 			  	= Player.None;
 
 	private Player _winner 	 			= Player.None;
-	private List<SlotInfo> _winnerSlots = new List<SlotInfo>();   
+	private List<SlotInfo> _winnerSlots = null;   
 
 	#endregion
 
@@ -122,6 +122,9 @@ public class CatMultiplayerServer : MultiplayerManager
 			_currentPlayerTurn = Player.Player2;
 		else
 			_currentPlayerTurn = Player.Player1;
+
+		_winner 		= Player.None;
+		_winnerSlots 	= null;
 	}
 
 	public override bool ProcessInput(PlayerInput input)
