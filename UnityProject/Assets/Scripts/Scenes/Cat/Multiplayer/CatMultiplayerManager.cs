@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class CatMultiplayerServer : MultiplayerManager 
+public class CatMultiplayerManager : MultiplayerManager 
 {
 	#region Structs
 
@@ -46,7 +46,7 @@ public class CatMultiplayerServer : MultiplayerManager
 
 	#region Variables
 
-	private static CatMultiplayerServer _instance = null;
+	private static CatMultiplayerManager _instance = null;
 
 	private List<List<Player>> _slotsRows = new List<List<Player>>();
 
@@ -61,14 +61,14 @@ public class CatMultiplayerServer : MultiplayerManager
 
 	#region Properties
 
-	public static CatMultiplayerServer Instance
+	public static CatMultiplayerManager Instance
 	{
 		get 
 		{
 			if(_instance != null)
 				return _instance;
 
-			_instance = new CatMultiplayerServer();
+			_instance = new CatMultiplayerManager();
 			return _instance; 
 		}
 	}
@@ -87,7 +87,7 @@ public class CatMultiplayerServer : MultiplayerManager
 
 	#region Constructor
 
-	private CatMultiplayerServer()
+	private CatMultiplayerManager()
 	{
 		_player = SocketsManager.Instance.Server.IsStarted ? Player.Player1 : Player.Player2;
 

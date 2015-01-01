@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class SelectSlotInput : PlayerInput
@@ -7,20 +7,20 @@ public class SelectSlotInput : PlayerInput
 
 	public int slotX 						  = 0;
 	public int slotY 						  = 0;
-	public CatMultiplayerServer.Player player = CatMultiplayerServer.Player.None;
+	public CatMultiplayerManager.Player player = CatMultiplayerManager.Player.None;
 
 	#endregion
 
 	#region Constructors
 
-	public SelectSlotInput(int slotX, int slotY, CatMultiplayerServer.Player player):base((int)CatMultiplayerServer.PlayerInputs.SelectSlot)
+	public SelectSlotInput(int slotX, int slotY, CatMultiplayerManager.Player player):base((int)CatMultiplayerManager.PlayerInputs.SelectSlot)
 	{
 		this.slotX  = slotX;
 		this.slotY  = slotY;
 		this.player = player;
 	}
 
-	public SelectSlotInput():base((int)CatMultiplayerServer.PlayerInputs.SelectSlot)
+	public SelectSlotInput():base((int)CatMultiplayerManager.PlayerInputs.SelectSlot)
 	{
 	}
 
@@ -43,7 +43,7 @@ public class SelectSlotInput : PlayerInput
 
 		slotX  = binaryReader.ReadInt32();
 		slotY  = binaryReader.ReadInt32();
-		player = (CatMultiplayerServer.Player)binaryReader.ReadInt32();
+		player = (CatMultiplayerManager.Player)binaryReader.ReadInt32();
 
 		return success;
 	}
