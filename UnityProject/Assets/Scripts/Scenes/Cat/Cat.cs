@@ -12,6 +12,10 @@ public class Cat : MonoBehaviour
 
 	#region Variables
 
+	public Sprite spriteEmpty = null;
+	public Sprite spriteX	  = null;
+	public Sprite spriteO 	  = null;
+
 	private List<List<SimpleButton>> _slotsButtons = new List<List<SimpleButton>>();
 
 	#endregion
@@ -29,6 +33,8 @@ public class Cat : MonoBehaviour
 				string buttonName   = BUTTON_NAME_FORMAT.Replace("X", x.ToString()).Replace("Y", y.ToString());
 				SimpleButton button = transform.Find(buttonName).GetComponent<SimpleButton>();
 				button.OnClick 		= OnSlotButtonClick;
+				button.GetComponent<SpriteRenderer>().sprite = spriteEmpty;
+
 				collum.Add(button);
 			}
 		}
@@ -36,7 +42,7 @@ public class Cat : MonoBehaviour
 
 	private void OnSlotButtonClick(SimpleButton sender)
 	{
-		Debug.Log(sender.name);
+		sender.GetComponent<SpriteRenderer>().sprite = spriteX;
 	}
 
 	#endregion

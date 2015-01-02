@@ -25,8 +25,8 @@ public class CatMultiplayerManager : MultiplayerManager
 	public enum Player
 	{
 		None,
-		Player1,
-		Player2
+		PlayerX,
+		PlayerO
 	}
 
 	public enum GameActions
@@ -89,7 +89,7 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	private CatMultiplayerManager()
 	{
-		_player = SocketsManager.Instance.Server.IsStarted ? Player.Player1 : Player.Player2;
+		_player = SocketsManager.Instance.Server.IsStarted ? Player.PlayerX : Player.PlayerO;
 
 		StartNewGame();
 	}
@@ -118,10 +118,10 @@ public class CatMultiplayerManager : MultiplayerManager
 			_slotsRows.Add(row);
 		}
 
-		if(_currentPlayerTurn == Player.None || _currentPlayerTurn == Player.Player1)
-			_currentPlayerTurn = Player.Player2;
+		if(_currentPlayerTurn == Player.None || _currentPlayerTurn == Player.PlayerX)
+			_currentPlayerTurn = Player.PlayerO;
 		else
-			_currentPlayerTurn = Player.Player1;
+			_currentPlayerTurn = Player.PlayerX;
 
 		_winner 		= Player.None;
 		_winnerSlots 	= null;
@@ -158,7 +158,7 @@ public class CatMultiplayerManager : MultiplayerManager
 
 			CheckForWinner();
 			//Update turn
-			_currentPlayerTurn = _currentPlayerTurn == Player.Player1 ? Player.Player2 : Player.Player1;
+			_currentPlayerTurn = _currentPlayerTurn == Player.PlayerX ? Player.PlayerO : Player.PlayerX;
 		}
 
 		base.ProcessAction(action);
