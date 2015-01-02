@@ -16,6 +16,8 @@ public class Cat : MonoBehaviour
 	public Sprite spriteX	  = null;
 	public Sprite spriteO 	  = null;
 
+	public TextMesh text = null;
+
 	private List<List<SimpleButton>> _slotsButtons = new List<List<SimpleButton>>();
 
 	#endregion
@@ -38,6 +40,16 @@ public class Cat : MonoBehaviour
 				collum.Add(button);
 			}
 		}
+
+		UpdateTurnText();
+	}
+
+	private void UpdateTurnText()
+	{
+		if(CatMultiplayerManager.Instance.CurrentPlayerTurn == CatMultiplayerManager.Instance.MyPlayer)
+			text.text = "Your Turn";
+		else
+			text.text = CatMultiplayerManager.Instance.CurrentPlayerTurn.ToString().Replace("Player", string.Empty);
 	}
 
 	private void OnSlotButtonClick(SimpleButton sender)

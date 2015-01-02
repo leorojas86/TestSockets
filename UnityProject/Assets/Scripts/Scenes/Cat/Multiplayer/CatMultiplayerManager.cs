@@ -83,6 +83,16 @@ public class CatMultiplayerManager : MultiplayerManager
 		get { return _winner; }
 	}
 
+	public Player MyPlayer
+	{
+		get { return _player; } 
+	}
+
+	public Player CurrentPlayerTurn
+	{
+		get { return _currentPlayerTurn; }
+	}
+
 	#endregion
 
 	#region Constructor
