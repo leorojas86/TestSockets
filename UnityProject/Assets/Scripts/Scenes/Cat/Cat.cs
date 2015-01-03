@@ -35,11 +35,14 @@ public class Cat : MonoBehaviour
 				string buttonName   = BUTTON_NAME_FORMAT.Replace("X", x.ToString()).Replace("Y", y.ToString());
 				SimpleButton button = transform.Find(buttonName).GetComponent<SimpleButton>();
 				button.OnClick 		= OnSlotButtonClick;
+				button.customTag    = new Vector2(x, y);
 				button.GetComponent<SpriteRenderer>().sprite = spriteEmpty;
 
 				collum.Add(button);
 			}
 		}
+
+		CatMultiplayerManager.Instance.OnGameAction = OnGameAction;
 
 		UpdateTurnText();
 	}
@@ -54,7 +57,24 @@ public class Cat : MonoBehaviour
 
 	private void OnSlotButtonClick(SimpleButton sender)
 	{
-		sender.GetComponent<SpriteRenderer>().sprite = spriteX;
+		Vector2 slotPosition 			= (Vector2)sender.customTag;
+		SelectSlotInput selectSlotInput = new SelectSlotInput((int)slotPosition.x, (int)slotPosition.y, CatMultiplayerManager.Instance.MyPlayer);
+		CatMultiplayerManager.Instance.ProcessInput(selectSlotInput);
+		//sender.GetComponent<SpriteRenderer>().sprite = spriteX;
+	}
+
+	private void OnGameAction(GameAction gameAction)
+	{
+		SelectSlotAction selectSlotAction = gameAction as SelectSlotAction;
+
+		if(selectSlotAction != null)
+		{
+			SimpleButton slotButton 						 = _slotsButtons[selectSlotAction.slotX][selectSlotAction.slotY];
+			Sprite sprite									 = selectSlotAction.player == CatMultiplayerManager.Player.PlayerX ? spriteX : spriteO; 
+			slotButton.GetComponent<SpriteRenderer>().sprite = sprite;
+		}
+		else
+			Debug.LogError("Unknow game action = " + gameAction);
 	}
 
 	#endregion

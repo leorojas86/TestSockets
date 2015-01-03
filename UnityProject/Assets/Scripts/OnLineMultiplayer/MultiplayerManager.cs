@@ -9,7 +9,7 @@ public abstract class MultiplayerManager
 	protected List<GameAction> _gameActions   = new List<GameAction>();
 	protected List<PlayerInput> _playerInputs = new List<PlayerInput>(); 
 
-	private System.Action<GameAction> OnGameAction = null;
+	public System.Action<GameAction> OnGameAction = null;
 	
 	#endregion
 
@@ -80,7 +80,7 @@ public abstract class MultiplayerManager
 		return null;
 	}
 	
-	public abstract void InitializeMessages();
+	protected abstract void InitializeMessages();
 
 	public virtual bool ProcessInput(PlayerInput input)
 	{

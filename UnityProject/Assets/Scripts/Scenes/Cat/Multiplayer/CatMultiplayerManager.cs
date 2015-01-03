@@ -108,7 +108,7 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	#region Methods
 
-	public override void InitializeMessages()
+	protected override void InitializeMessages()
 	{
 		_gameActions.Add(new SelectSlotAction());
 		_playerInputs.Add(new SelectSlotInput());

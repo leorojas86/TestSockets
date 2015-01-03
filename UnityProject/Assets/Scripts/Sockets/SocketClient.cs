@@ -154,15 +154,20 @@ public class SocketClient
 
 	public void SendMessageToServer(byte[] bytes)
 	{
-		try
+		if(_tcpClient != null)
 		{
-			NetworkUtils.SendBytesToTCPConnection(bytes, _tcpClient);
+			try
+			{
+				NetworkUtils.SendBytesToTCPConnection(bytes, _tcpClient);
+			}
+			catch(IOException e)
+			{
+				NotifyOnServerDisconnected();
+				Disconnect();
+			}
 		}
-		catch(IOException e)
-		{
-			NotifyOnServerDisconnected();
-			Disconnect();
-		}
+		else
+			Debug.LogError("Can not send message to server, client is not connected to server");
 	}
 
 	private void ProcessServerMessagesThread()
