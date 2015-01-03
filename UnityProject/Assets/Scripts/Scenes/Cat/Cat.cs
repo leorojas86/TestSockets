@@ -40,6 +40,8 @@ public class Cat : MonoBehaviour
 
 				collum.Add(button);
 			}
+
+			_slotsButtons.Add(collum);
 		}
 
 		CatMultiplayerManager.Instance.OnGameAction = OnGameAction;
@@ -69,6 +71,7 @@ public class Cat : MonoBehaviour
 
 		if(selectSlotAction != null)
 		{
+			Debug.Log("selectSlotAction.slotX = " + selectSlotAction.slotX + " selectSlotAction.slotY = " + selectSlotAction.slotY);
 			SimpleButton slotButton 						 = _slotsButtons[selectSlotAction.slotX][selectSlotAction.slotY];
 			Sprite sprite									 = selectSlotAction.player == CatMultiplayerManager.Player.PlayerX ? spriteX : spriteO; 
 			slotButton.GetComponent<SpriteRenderer>().sprite = sprite;

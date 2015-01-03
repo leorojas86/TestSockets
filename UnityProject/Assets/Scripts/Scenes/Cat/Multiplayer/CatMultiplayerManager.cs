@@ -120,12 +120,12 @@ public class CatMultiplayerManager : MultiplayerManager
 
 		for(int x = 0; x < _slotsSize; x++)
 		{
-			List<Player> row = new List<Player>();
+			List<Player> collum = new List<Player>();
 			
 			for(int y = 0; y < _slotsSize; y++)
-				row.Add(Player.None);
+				collum.Add(Player.None);
 			
-			_slotsRows.Add(row);
+			_slotsRows.Add(collum);
 		}
 
 		if(_currentPlayerTurn == Player.None || _currentPlayerTurn == Player.PlayerX)
@@ -139,7 +139,9 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	public override bool ProcessInput(PlayerInput input)
 	{
-		if(!base.ProcessInput(input))//Only server must process inputs, clients must send the input to the server to let the server process the input
+		if(base.ProcessInput(input))//Only server must process inputs, clients must send the input to the server to let the server process the input
+			return true;
+		else
 		{
 			SelectSlotInput selectSlotInput = input as SelectSlotInput;
 
@@ -152,9 +154,10 @@ public class CatMultiplayerManager : MultiplayerManager
 					return true;
 				}
 			}
+			else
+				Debug.LogError("Unknown player input = " + input);
 		}
 
-		Debug.LogError("Unknown player input = " + input);
 		return false;
 	}
 

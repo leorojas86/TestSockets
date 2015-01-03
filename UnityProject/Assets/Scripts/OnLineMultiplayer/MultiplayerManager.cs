@@ -84,7 +84,7 @@ public abstract class MultiplayerManager
 
 	public virtual bool ProcessInput(PlayerInput input)
 	{
-		if(!SocketsManager.Instance.Server.IsStarted)//it's client, only server should process inputs
+		if(SocketsManager.Instance.Client.IsConnected)//it's client, only server should process inputs
 		{
 			SocketsManager.Instance.Client.SendMessageToServer(input.ToBytes());//Sending player input to server to let server process it
 			return true;
