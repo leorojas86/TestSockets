@@ -45,6 +45,7 @@ public class Cat : MonoBehaviour
 			_slotsButtons.Add(collum);
 		}
 
+		CatMultiplayerManager.Instance.StartNewGame();
 		CatMultiplayerManager.Instance.OnGameAction = OnGameAction;
 
 		UpdateTurnText();
@@ -68,7 +69,7 @@ public class Cat : MonoBehaviour
 		if(CatMultiplayerManager.Instance.CurrentPlayerTurn == CatMultiplayerManager.Instance.MyPlayer)
 			text.text = "Your Turn";
 		else
-			text.text = CatMultiplayerManager.Instance.CurrentPlayerTurn.ToString().Replace("Player", string.Empty);
+			text.text = CatMultiplayerManager.Instance.CurrentPlayerTurn.ToString().Replace("Player", string.Empty) + " Turn";
 	}
 
 	private void OnSlotButtonClick(SimpleButton sender)
@@ -91,6 +92,8 @@ public class Cat : MonoBehaviour
 			SimpleButton slotButton 						 = _slotsButtons[selectSlotAction.slotX][selectSlotAction.slotY];
 			Sprite sprite									 = selectSlotAction.player == CatMultiplayerManager.Player.PlayerX ? spriteX : spriteO; 
 			slotButton.GetComponent<SpriteRenderer>().sprite = sprite;
+
+			UpdateTurnText();
 		}
 		else
 			Debug.LogError("Unknow game action = " + gameAction);

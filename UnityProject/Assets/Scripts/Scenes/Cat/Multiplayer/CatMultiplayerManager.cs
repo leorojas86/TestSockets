@@ -99,9 +99,6 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	private CatMultiplayerManager()
 	{
-		_player = SocketsManager.Instance.Server.IsStarted ? Player.PlayerX : Player.PlayerO;
-
-		StartNewGame();
 	}
 
 	#endregion
@@ -114,9 +111,11 @@ public class CatMultiplayerManager : MultiplayerManager
 		_playerInputs.Add(new SelectSlotInput());
 	}
 
-	public void StartNewGame()
+	public override void StartNewGame()
 	{
 		base.StartNewGame();
+
+		_player = SocketsManager.Instance.Server.IsStarted ? Player.PlayerX : Player.PlayerO;
 
 		for(int x = 0; x < _slotsSize; x++)
 		{

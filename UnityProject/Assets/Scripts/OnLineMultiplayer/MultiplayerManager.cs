@@ -17,8 +17,6 @@ public abstract class MultiplayerManager
 
 	public MultiplayerManager()
 	{
-		SocketsManager.Instance.Client.OnServerMessage = OnSocketMessage;
-		SocketsManager.Instance.Server.OnClientMessage = OnSocketMessage;
 	}
 
 	#endregion
@@ -35,9 +33,12 @@ public abstract class MultiplayerManager
 
 	protected virtual void OnSocketMessage(SocketMessage message)
 	{
+		Debug.Log("OnSocketMessage");
 		MultiplayerMessage multiplayerMessage = new MultiplayerMessage();
 
 		multiplayerMessage.FromBytes(message.data);
+
+		Debug.Log("Message type = " + multiplayerMessage.type);
 
 		switch(multiplayerMessage.type)
 		{
