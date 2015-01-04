@@ -8,13 +8,17 @@ public class SocketServerInfo
 {
 	#region Variables
 
-	public string ip			= null;
-	public string info  		= null;
-	public float lastListenTime = 0;
+	public string ip			 = null;
+	public string info  		 = null;
+	public double lastListenTime = 0;
 
 	#endregion
 
 	#region Constructors
+
+	public SocketServerInfo()
+	{
+	}
 	
 	public SocketServerInfo(string ip, string info)
 	{
@@ -25,16 +29,12 @@ public class SocketServerInfo
 
 	#endregion
 
-	#region Properties
-
-	public IPAddress IP
-	{
-		get { return IPAddress.Parse(ip); }
-	}
-
-	#endregion
-
 	#region Methods
+
+	public IPAddress GetIPAddress()
+	{
+		return IPAddress.Parse(ip);
+	}
 
 	public static string ToJson(SocketServerInfo info)
 	{

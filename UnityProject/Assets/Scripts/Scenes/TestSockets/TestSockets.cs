@@ -79,7 +79,7 @@ public class TestSockets : MonoBehaviour
 	private void OnServerFound(SocketServerInfo serverInfo)
 	{
 		SocketsManager.Instance.Client.StopFindingServers();
-		ConnectClient(serverInfo.IP);
+		ConnectClient(serverInfo.GetIPAddress());
 	}
 
 	private void OnServerDisconnected(TcpClient server)

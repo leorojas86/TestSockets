@@ -64,7 +64,7 @@ public class Lobby : MonoBehaviour
 
 				if(GUI.Button(new Rect(10, y, 100, 30), serverInfo.ip))
 				{
-					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.IP))
+					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.GetIPAddress()))
 					{
 						ServerInfo info = GetServerInfo(serverInfo);
 						Application.LoadLevel(info.type + "Scene");
@@ -88,7 +88,9 @@ public class Lobby : MonoBehaviour
 					SocketsManager.Instance.StartServer(OnClientConnected);
 					ServerInfo serverInfo = new ServerInfo(currentGame);
 					string serverInfoJson = LitJson.JsonMapper.ToJson(serverInfo);
+
 					SocketsManager.Instance.Server.StartSendingServerInfoBroadcast(serverInfoJson);
+					//Debug.Log("serverInfoJson = " + SocketServerInfo.ToJson(SocketsManager.Instance.Server.ServerInfo));
 				}
 				
 				y += 50;
