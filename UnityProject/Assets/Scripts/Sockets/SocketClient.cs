@@ -10,6 +10,12 @@ using System.IO;
 
 public class SocketClient 
 {
+	#region Constants
+
+	private float LOST_SERVER_SECONDS = 2;
+
+	#endregion
+
 	#region Variables
 
 	private TcpClient _tcpClient 	   		    = null;
@@ -204,28 +210,23 @@ public class SocketClient
 			while(_listenServersBroadcastMessagesThread != null) 
 			{
 				LogManager.Instance.LogMessage("Waiting for broadcast");
-				byte[] bytes = listener.Receive( ref groupEP);
-				string data  = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+				byte[] bytes 				= listener.Receive(ref groupEP);
+				string data  				= Encoding.ASCII.GetString(bytes, 0, bytes.Length);
+				SocketServerInfo serverInfo = SocketServerInfo.FromJson(data);
 
-				if(data.Contains("ServerIP:"))
+				if(serverInfo != null)
 				{
-					string ip = data.Replace("ServerIP:", string.Empty);
+					SocketServerInfo existentServerInfo = FindServerInfo(serverInfo.ip);
 
-					SocketServerInfo foundServerInfo = FindServerInfo(ip);
-
-					if(foundServerInfo != null)
-						foundServerInfo.listen = true;
+					if(existentServerInfo != null)
+						existentServerInfo.lastListenTime = Time.time;
 					else
 					{
-						SocketServerInfo serverInfo = new SocketServerInfo(ip, data);
 						_foundServers.Add(serverInfo);
 						NotifyOnServerFound(serverInfo);
 					}
 				}
-
-				//LogManager.Instance.LogMessage("Received broadcast from " + groupEP.ToString() + " :\n " + data + "\n");
-			}
-			
+			}	
 		} 
 		catch (Exception e) 
 		{
@@ -235,6 +236,19 @@ public class SocketClient
 		{
 			listener.Close();
 		}
+	}
+
+	private bool IsServerFound(string ip)
+	{
+		for(int x = 0; x < _foundServers.Count; x++)
+		{
+			SocketServerInfo currentServerInfo = _foundServers[x];
+
+			if(currentServerInfo.ip == ip)
+				return true;
+		}
+
+		return false;
 	}
 
 	private SocketServerInfo FindServerInfo(string ip)
@@ -260,10 +274,8 @@ public class SocketClient
 			{
 				SocketServerInfo serverInfo = _foundServers[x];
 
-				if(serverInfo.listen)
-					serverInfo.listen = false;
-				else
-					lostServers.Add(serverInfo);//If a server hasn't been listened in 1 second it is lost
+				if(Time.time - serverInfo.lastListenTime > LOST_SERVER_SECONDS)
+					lostServers.Add(serverInfo);
 			}
 
 			for(int x = 0; x < lostServers.Count; x++)

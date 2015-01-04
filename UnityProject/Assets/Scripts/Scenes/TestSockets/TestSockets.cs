@@ -43,7 +43,7 @@ public class TestSockets : MonoBehaviour
 			if(!SocketsManager.Instance.Server.IsStarted)
 			{
 				SocketsManager.Instance.StartServer(OnClientConnected);
-				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast();
+				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast(string.Empty);
 			}
 			else
 				SocketsManager.Instance.StopServer();
@@ -79,7 +79,7 @@ public class TestSockets : MonoBehaviour
 	private void OnServerFound(SocketServerInfo serverInfo)
 	{
 		SocketsManager.Instance.Client.StopFindingServers();
-		ConnectClient(serverInfo.ipAddress);
+		ConnectClient(serverInfo.IP);
 	}
 
 	private void OnServerDisconnected(TcpClient server)

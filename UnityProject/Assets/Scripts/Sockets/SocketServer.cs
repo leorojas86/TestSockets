@@ -26,6 +26,8 @@ public class SocketServer
 	
 	private bool _isBroadcastingServerInfo = false;
 
+	private SocketServerInfo _serverInfo = null;
+
 	#endregion
 
 	#region Properties
@@ -48,6 +50,11 @@ public class SocketServer
 	public List<TcpClient> Clients
 	{
 		get { return _clients; }
+	}
+
+	public SocketServerInfo ServerInfo
+	{
+		get { return _serverInfo; }
 	}
 
 	#endregion
@@ -78,12 +85,13 @@ public class SocketServer
 			LogManager.Instance.LogMessage("Can not start server twice");
 	}
 
-	public void StartSendingServerInfoBroadcast()
+	public void StartSendingServerInfoBroadcast(string serverInfo)
 	{
 		if(!_isBroadcastingServerInfo)
 		{
 			if(_isStarted)
 			{
+				_serverInfo 				   = new SocketServerInfo(_serverEndPoint.Address.ToString(), serverInfo);
 				_sendServerInfoBroadcastThread = new Thread(new ThreadStart(SendServerInfoBroadcast));
 				_sendServerInfoBroadcastThread.Start();
 
@@ -128,7 +136,8 @@ public class SocketServer
 		broadcastSocket.EnableBroadcast = true;
 		IPAddress broadcast    			= IPAddress.Parse("255.255.255.255");//Boadcast to all local network
 		IPEndPoint endPoint    			= new IPEndPoint(broadcast, _serverEndPoint.Port);
-		byte[] messageBytes    			= Encoding.ASCII.GetBytes("ServerIP:" + _serverEndPoint.Address);
+		string serverInfo 				= SocketServerInfo.ToJson(_serverInfo);
+		byte[] messageBytes    			= Encoding.ASCII.GetBytes(serverInfo);
 
 		try
 		{

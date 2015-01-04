@@ -5,6 +5,31 @@ using System.Net.Sockets;
 
 public class Lobby : MonoBehaviour 
 {
+	#region Enums
+
+	public enum Games
+	{
+		Table,
+		Cat,
+		Count
+	}
+
+	#endregion
+
+	#region Structs
+
+	public struct ServerInfo
+	{
+		public Games type;
+
+		public ServerInfo(Games type)
+		{
+			this.type = type;
+		}
+	}
+
+	#endregion
+
 	#region Methods
 
 	void Start() 
@@ -22,6 +47,12 @@ public class Lobby : MonoBehaviour
 		if(SocketsManager.Instance.Server.IsStarted)
 		{
 			GUI.Label(new Rect(10, 50, 100, 30), "Waiting for client");
+
+			if(GUI.Button(new Rect(10, 300, 100, 30), "Stop Game"))
+			{
+				SocketsManager.Instance.StopServer();
+				SocketsManager.Instance.FindServers(null, null);
+			}
 		}
 		else
 		{
@@ -31,30 +62,36 @@ public class Lobby : MonoBehaviour
 			{
 				SocketServerInfo serverInfo = SocketsManager.Instance.Client.FoundServers[x];
 
-				if(GUI.Button(new Rect(10, y, 100, 30), serverInfo.ipAddress.ToString()))
+				if(GUI.Button(new Rect(10, y, 100, 30), serverInfo.ip))
 				{
-					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.ipAddress))
-						Application.LoadLevel("TableScene");
+					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.IP))
+					{
+						ServerInfo info = GetServerInfo(serverInfo);
+						Application.LoadLevel(info.type + "Scene");
+					}
 				}
 				
 				y += 50;
 			}
-		}
 
-		string text = SocketsManager.Instance.Server.IsStarted ? "Stop Game" : "Start Table Game";
-
-		if(GUI.Button(new Rect(10, 300, 100, 30), text))
-		{
-			if(SocketsManager.Instance.Server.IsStarted)
+			y = 300;
+			
+			for(int x = 0; x < (int)Games.Count; x++)
 			{
-				SocketsManager.Instance.StopServer();
-				SocketsManager.Instance.FindServers(null, null);
-			}
-			else
-			{
-				SocketsManager.Instance.StopFindingServers();
-				SocketsManager.Instance.StartServer(OnClientConnected);
-				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast();
+				Games currentGame = (Games)x;
+				
+				string text = "Start " + currentGame + " Game";
+				
+				if(GUI.Button(new Rect(10, y, 100, 30), text))
+				{
+					SocketsManager.Instance.StopFindingServers();
+					SocketsManager.Instance.StartServer(OnClientConnected);
+					ServerInfo serverInfo = new ServerInfo(currentGame);
+					string serverInfoJson = LitJson.JsonMapper.ToJson(serverInfo);
+					SocketsManager.Instance.Server.StartSendingServerInfoBroadcast(serverInfoJson);
+				}
+				
+				y += 50;
 			}
 		}
 	}
@@ -62,7 +99,13 @@ public class Lobby : MonoBehaviour
 	private void OnClientConnected(TcpClient client)
 	{
 		//Application.LoadLevel("TableScene");
-		StartCoroutine(LoadSceneCoroutine("TableScene"));
+		ServerInfo serverInfo = GetServerInfo(SocketsManager.Instance.Server.ServerInfo);
+		StartCoroutine(LoadSceneCoroutine(serverInfo.type + "Scene"));
+	}
+
+	private static ServerInfo GetServerInfo(SocketServerInfo serverInfo)
+	{
+		return LitJson.JsonMapper.ToObject<ServerInfo>(serverInfo.info);
 	}
 
 	private IEnumerator LoadSceneCoroutine(string scene)
