@@ -18,11 +18,11 @@ public class Lobby : MonoBehaviour
 
 	#region Structs
 
-	public struct ServerInfo
+	public struct GameInfo
 	{
 		public Games type;
 
-		public ServerInfo(Games type)
+		public GameInfo(Games type)
 		{
 			this.type = type;
 		}
@@ -46,7 +46,8 @@ public class Lobby : MonoBehaviour
 	{
 		if(SocketsManager.Instance.Server.IsStarted)
 		{
-			GUI.Label(new Rect(10, 50, 100, 30), "Waiting for client");
+			GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
+			GUI.Label(new Rect(10, 50, 100, 30), "Waiting for " + gameInfo.type + " client at " + SocketsManager.Instance.Server.ServerInfo.ip);
 
 			if(GUI.Button(new Rect(10, 300, 100, 30), "Stop Game"))
 			{
@@ -61,14 +62,12 @@ public class Lobby : MonoBehaviour
 			for(int x = 0; x < SocketsManager.Instance.Client.FoundServers.Count; x++)
 			{
 				SocketServerInfo serverInfo = SocketsManager.Instance.Client.FoundServers[x];
+				GameInfo gameInfo 			= GetGameInfo(serverInfo); 
 
-				if(GUI.Button(new Rect(10, y, 100, 30), serverInfo.ip))
+				if(GUI.Button(new Rect(10, y, 100, 30), gameInfo.type + "@" + serverInfo.ip))
 				{
 					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.GetIPAddress()))
-					{
-						ServerInfo info = GetServerInfo(serverInfo);
-						Application.LoadLevel(info.type + "Scene");
-					}
+						Application.LoadLevel(gameInfo.type + "Scene");
 				}
 				
 				y += 50;
@@ -86,7 +85,7 @@ public class Lobby : MonoBehaviour
 				{
 					SocketsManager.Instance.StopFindingServers();
 					SocketsManager.Instance.StartServer(OnClientConnected);
-					ServerInfo serverInfo = new ServerInfo(currentGame);
+					GameInfo serverInfo   = new GameInfo(currentGame);
 					string serverInfoJson = LitJson.JsonMapper.ToJson(serverInfo);
 
 					SocketsManager.Instance.Server.StartSendingServerInfoBroadcast(serverInfoJson);
@@ -101,13 +100,13 @@ public class Lobby : MonoBehaviour
 	private void OnClientConnected(TcpClient client)
 	{
 		//Application.LoadLevel("TableScene");
-		ServerInfo serverInfo = GetServerInfo(SocketsManager.Instance.Server.ServerInfo);
-		StartCoroutine(LoadSceneCoroutine(serverInfo.type + "Scene"));
+		GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
+		StartCoroutine(LoadSceneCoroutine(gameInfo.type + "Scene"));
 	}
 
-	private static ServerInfo GetServerInfo(SocketServerInfo serverInfo)
+	private static GameInfo GetGameInfo(SocketServerInfo serverInfo)
 	{
-		return LitJson.JsonMapper.ToObject<ServerInfo>(serverInfo.info);
+		return LitJson.JsonMapper.ToObject<GameInfo>(serverInfo.info);
 	}
 
 	private IEnumerator LoadSceneCoroutine(string scene)
