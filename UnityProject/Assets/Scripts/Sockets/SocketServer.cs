@@ -219,16 +219,18 @@ public class SocketServer
 
 	public void SendMessageToClient(string message, TcpClient client)
 	{
-		byte[] bytes = NetworkUtils.GetMessageBytes(message);;
+		byte[] bytes = NetworkUtils.GetMessageBytes(message);
 		
 		SendMessageToClient(bytes, client);
 	}
 
-	public void SendMessageToClient(byte[] message, TcpClient client)
+	public void SendMessageToClient(byte[] bytes, TcpClient client)
 	{
 		try
 		{
-			NetworkUtils.SendBytesToTCPConnection(message, client);
+			SocketsManager.Instance.Log("Sending message to client = " + bytes.Length);
+
+			NetworkUtils.SendBytesToTCPConnection(bytes, client);
 		}
 		catch(IOException e)
 		{
@@ -246,11 +248,13 @@ public class SocketServer
 		}
 	}
 
-	private void NotifyOnClientMessage(TcpClient client, byte[] message)
+	private void NotifyOnClientMessage(TcpClient client, byte[] bytes)
 	{
+		SocketsManager.Instance.Log("On Client Message = " + bytes.Length);
+
 		if(OnClientMessage != null)
 		{
-			SocketMessage socketMessage = new SocketMessage(client, message);
+			SocketMessage socketMessage = new SocketMessage(client, bytes);
 			SocketsManager.Instance.InvokeAction(OnClientMessage, socketMessage);
 			//OnClientMessage(socketMessage);
 		}

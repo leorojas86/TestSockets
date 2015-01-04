@@ -49,6 +49,8 @@ public class SocketsManager
 
 	private List<IActionInvoker> _invokingActions = new List<IActionInvoker>();
 
+	private bool _isLogEnabled = false;
+
 	#endregion
 
 	#region Properties
@@ -79,6 +81,12 @@ public class SocketsManager
 	{
 		get { return _port; }
 		set { _port = value; }
+	}
+
+	public bool IsLogEnabled
+	{
+		get { return _isLogEnabled; }
+		set { _isLogEnabled = value; }
 	}
 
 	#endregion
@@ -139,6 +147,12 @@ public class SocketsManager
 	{
 		InvokeActionData<T> invokeData = new InvokeActionData<T>(action, param);
 		_invokingActions.Add(invokeData);
+	}
+
+	public void Log(string message)
+	{
+		if(_isLogEnabled)
+			Debug.Log(message);
 	}
 
 	#endregion

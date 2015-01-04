@@ -35,6 +35,7 @@ public class Lobby : MonoBehaviour
 	void Start() 
 	{
 		SocketsManager.Instance.FindServers(null, null);
+		SocketsManager.Instance.IsLogEnabled = true;
 	}
 
 	void Update()
@@ -47,7 +48,7 @@ public class Lobby : MonoBehaviour
 		if(SocketsManager.Instance.Server.IsStarted)
 		{
 			GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
-			GUI.Label(new Rect(10, 50, 100, 30), "Waiting for " + gameInfo.type + " client at " + SocketsManager.Instance.Server.ServerInfo.ip);
+			GUI.Label(new Rect(10, 50, 300, 30), "Waiting for " + gameInfo.type + " client at " + SocketsManager.Instance.Server.ServerInfo.ip);
 
 			if(GUI.Button(new Rect(10, 300, 100, 30), "Stop Game"))
 			{
@@ -64,7 +65,7 @@ public class Lobby : MonoBehaviour
 				SocketServerInfo serverInfo = SocketsManager.Instance.Client.FoundServers[x];
 				GameInfo gameInfo 			= GetGameInfo(serverInfo); 
 
-				if(GUI.Button(new Rect(10, y, 100, 30), gameInfo.type + "@" + serverInfo.ip))
+				if(GUI.Button(new Rect(10, y, 200, 30), gameInfo.type + "@" + serverInfo.ip))
 				{
 					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.GetIPAddress()))
 						Application.LoadLevel(gameInfo.type + "Scene");
@@ -81,7 +82,7 @@ public class Lobby : MonoBehaviour
 				
 				string text = "Start " + currentGame + " Game";
 				
-				if(GUI.Button(new Rect(10, y, 100, 30), text))
+				if(GUI.Button(new Rect(10, y, 200, 30), text))
 				{
 					SocketsManager.Instance.StopFindingServers();
 					SocketsManager.Instance.StartServer(OnClientConnected);

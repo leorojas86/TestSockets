@@ -164,6 +164,7 @@ public class SocketClient
 		{
 			try
 			{
+				SocketsManager.Instance.Log("Sending message to server = " + bytes.Length);
 				NetworkUtils.SendBytesToTCPConnection(bytes, _tcpClient);
 			}
 			catch(IOException e)
@@ -219,7 +220,7 @@ public class SocketClient
 					SocketServerInfo existentServerInfo = FindServerInfo(serverInfo.ip);
 
 					if(existentServerInfo != null)
-						existentServerInfo.lastListenTime = Time.time;
+						existentServerInfo.lastListenTime = System.DateTime.Now;
 					else
 					{
 						_foundServers.Add(serverInfo);
@@ -236,19 +237,6 @@ public class SocketClient
 		{
 			listener.Close();
 		}
-	}
-
-	private bool IsServerFound(string ip)
-	{
-		for(int x = 0; x < _foundServers.Count; x++)
-		{
-			SocketServerInfo currentServerInfo = _foundServers[x];
-
-			if(currentServerInfo.ip == ip)
-				return true;
-		}
-
-		return false;
 	}
 
 	private SocketServerInfo FindServerInfo(string ip)
@@ -274,7 +262,9 @@ public class SocketClient
 			{
 				SocketServerInfo serverInfo = _foundServers[x];
 
-				if(Time.time - serverInfo.lastListenTime > LOST_SERVER_SECONDS)
+				System.TimeSpan timeSpan = System.DateTime.Now - serverInfo.lastListenTime;
+
+				if(timeSpan.Seconds > LOST_SERVER_SECONDS)
 					lostServers.Add(serverInfo);
 			}
 
@@ -307,11 +297,13 @@ public class SocketClient
 		}
 	}
 
-	private void NotifyOnServerMessage(TcpClient sender, byte[] data)
+	private void NotifyOnServerMessage(TcpClient sender, byte[] bytes)
 	{
+		SocketsManager.Instance.Log("On Server Message = " + bytes.Length);
+
 		if(OnServerMessage != null)
 		{
-			SocketMessage socketMessage = new SocketMessage(sender, data);
+			SocketMessage socketMessage = new SocketMessage(sender, bytes);
 
 			SocketsManager.Instance.InvokeAction(OnServerMessage, socketMessage);
 			//OnServerMessage(socketMessage);

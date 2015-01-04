@@ -8,9 +8,9 @@ public class SocketServerInfo
 {
 	#region Variables
 
-	public string ip			 = null;
-	public string info  		 = null;
-	public double lastListenTime = 0;
+	public string ip			 		  = null;
+	public string info  		 		  = null;
+	public System.DateTime lastListenTime = System.DateTime.MinValue;
 
 	#endregion
 
@@ -24,7 +24,7 @@ public class SocketServerInfo
 	{
 		this.ip   			= ip;
 		this.info 			= info;
-		this.lastListenTime = Time.time;
+		this.lastListenTime = System.DateTime.Now;
 	}
 
 	#endregion

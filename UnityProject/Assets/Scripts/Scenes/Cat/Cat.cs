@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Sockets;
 
 public class Cat : MonoBehaviour 
 {
@@ -47,6 +48,19 @@ public class Cat : MonoBehaviour
 		CatMultiplayerManager.Instance.OnGameAction = OnGameAction;
 
 		UpdateTurnText();
+
+		SocketsManager.Instance.Server.OnClientDisconnected = OnClientDisconnected;
+		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
+	}
+
+	private void OnClientDisconnected(TcpClient client)
+	{
+		Application.LoadLevel("Lobby");
+	}
+
+	private void OnServerDisconnected(TcpClient client)
+	{
+		Application.LoadLevel("Lobby");
 	}
 
 	private void UpdateTurnText()
@@ -61,6 +75,8 @@ public class Cat : MonoBehaviour
 	{
 		Vector2 slotPosition 			= (Vector2)sender.customTag;
 		SelectSlotInput selectSlotInput = new SelectSlotInput((int)slotPosition.x, (int)slotPosition.y, CatMultiplayerManager.Instance.MyPlayer);
+
+		Debug.Log("OnSlotButtonClick slotPosition = " + slotPosition);
 		CatMultiplayerManager.Instance.ProcessInput(selectSlotInput);
 		//sender.GetComponent<SpriteRenderer>().sprite = spriteX;
 	}
