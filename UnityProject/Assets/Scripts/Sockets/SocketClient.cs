@@ -20,10 +20,6 @@ public class SocketClient : MonoBehaviour
 
 	private TcpClient _tcpClient 	   		    = null;
 	private IPEndPoint _connectedServerEndPoint = null;
-	private Thread _listenServerMessagesThread  = null;
-
-	private Thread _listenServersBroadcastMessagesThread = null;
-	private Thread _checkForLostServersThread     		 = null;
 
 	public System.Action<SocketMessage> OnServerMessage  = null;
 	public System.Action<TcpClient> OnServerDisconnected = null;
@@ -35,7 +31,13 @@ public class SocketClient : MonoBehaviour
 
 	private bool _isFindingServers = false;
 
-	private List<SocketServerInfo> _foundServers = new List<SocketServerInfo>();
+	private List<SocketServerInfo> _foundServers         = new List<SocketServerInfo>();
+	private List<SocketServerInfo> _recentlyFoundServers = new List<SocketServerInfo>();
+
+	private Thread _listenBroadcastMessagesThread = null;
+	private IEnumerator _checkForLostServersCoroutine     = null;
+
+	private IEnumerator _processServerMessagesCoroutine = null;
 
 	#endregion
 
@@ -69,11 +71,12 @@ public class SocketClient : MonoBehaviour
 	{
 		if(!_isFindingServers)
 		{
-			_listenServersBroadcastMessagesThread = new Thread(new ParameterizedThreadStart(ListenBroadcastMessages));
-			_listenServersBroadcastMessagesThread.Start(port);
+			_listenBroadcastMessagesThread = new Thread(new ParameterizedThreadStart(ListenBroadcastMessagesThread));
+			_listenBroadcastMessagesThread.Start(port);
+			//StartCoroutine(_listenBroadcastMessagesThread);
 
-			_checkForLostServersThread = new Thread(new ThreadStart(CheckForLostServersThread));
-			_checkForLostServersThread.Start();
+			_checkForLostServersCoroutine = CheckForLostServersCoroutine();
+			StartCoroutine(_checkForLostServersCoroutine);
 
 			_isFindingServers = true;
 
@@ -88,9 +91,12 @@ public class SocketClient : MonoBehaviour
 	{
 		if(_isFindingServers)
 		{
-			_listenServersBroadcastMessagesThread = null;
-			_checkForLostServersThread 			  = null;
+			//StopCoroutine(_listenBroadcastMessagesThread);
+			_listenBroadcastMessagesThread = null;
 
+			StopCoroutine(_checkForLostServersCoroutine);
+			_checkForLostServersCoroutine  = null;
+				
 			_foundServers.Clear();
 
 			_isFindingServers = false;
@@ -111,8 +117,9 @@ public class SocketClient : MonoBehaviour
 			{
 				_tcpClient.Connect(_connectedServerEndPoint);
 
-				_listenServerMessagesThread = new Thread(new ThreadStart(ProcessServerMessagesThread));
-				_listenServerMessagesThread.Start();
+				_processServerMessagesCoroutine = ProcessServerMessagesCoroutine();
+
+				StartCoroutine(_processServerMessagesCoroutine);
 
 				_isConnected = true;
 
@@ -134,8 +141,11 @@ public class SocketClient : MonoBehaviour
 	{
 		if(_isConnected)
 		{
-			_connectedServerEndPoint    = null;
-			_listenServerMessagesThread = null;
+			StopCoroutine(_processServerMessagesCoroutine);
+			_processServerMessagesCoroutine = null;
+
+			_connectedServerEndPoint = null;
+
 			_tcpClient.Close();
 			_tcpClient = null;
 
@@ -169,11 +179,11 @@ public class SocketClient : MonoBehaviour
 			Debug.LogError("Can not send message to server, client is not connected to server");
 	}
 
-	private void ProcessServerMessagesThread()
+	private IEnumerator ProcessServerMessagesCoroutine()
 	{	
-		try
-		{
-			while(_listenServerMessagesThread != null)
+		//try
+		//{
+			while(_processServerMessagesCoroutine != null)
 			{
 				byte[] bytes = NetworkUtils.ReadBytesFromTCPConnection(_tcpClient);
 
@@ -184,23 +194,25 @@ public class SocketClient : MonoBehaviour
 					for(int x = 0; x < messages.Count; x++)
 						NotifyOnServerMessage(_tcpClient, messages[x]);
 				}
+
+				yield return new WaitForEndOfFrame();
 			}
-		}
-		catch(Exception e)
-		{
-			LogManager.Instance.LogMessage("Exception while processing server messages, exception = " + e.ToString());
-		}
+		//}
+		//catch(Exception e)
+		//{
+			//LogManager.Instance.LogMessage("Exception while processing server messages, exception = " + e.ToString());
+		//}
 	}
 
-	private void ListenBroadcastMessages(object portParam) 
+	private void ListenBroadcastMessagesThread(object portObject) 
 	{
-		int port 		   = (int)portParam;
+		int port 		   = (int)portObject;
 		UdpClient listener = new UdpClient(port);
 		IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, port);
 		
 		try 
 		{
-			while(_listenServersBroadcastMessagesThread != null) 
+			while(_listenBroadcastMessagesThread != null) 
 			{
 				LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes 				= listener.Receive(ref groupEP);
@@ -216,7 +228,7 @@ public class SocketClient : MonoBehaviour
 					else
 					{
 						_foundServers.Add(serverInfo);
-						NotifyOnServerFound(serverInfo);
+						_recentlyFoundServers.Add(serverInfo);
 					}
 				}
 			}	
@@ -228,6 +240,20 @@ public class SocketClient : MonoBehaviour
 		finally
 		{
 			listener.Close();
+		}
+	}
+
+	void Update()
+	{
+		if(_recentlyFoundServers.Count > 0)
+		{
+			for(int x = 0; x < _recentlyFoundServers.Count; x++)
+			{
+				SocketServerInfo currentServerInfo = _recentlyFoundServers[x];
+				NotifyOnServerFound(currentServerInfo);
+			}
+
+			_recentlyFoundServers.Clear();
 		}
 	}
 
@@ -244,9 +270,9 @@ public class SocketClient : MonoBehaviour
 		return null;
 	}
 
-	private void CheckForLostServersThread()
+	private IEnumerator CheckForLostServersCoroutine()
 	{
-		while(_checkForLostServersThread != null)
+		while(_checkForLostServersCoroutine != null)
 		{
 			List<SocketServerInfo> lostServers = new List<SocketServerInfo>();
 
@@ -267,7 +293,7 @@ public class SocketClient : MonoBehaviour
 				_foundServers.Remove(lostServer);
 			}
 
-			Thread.Sleep(1000);//Wait for 1 second
+			yield return new WaitForSeconds(1);//Wait for 1 second
 		}
 	}
 

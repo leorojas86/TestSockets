@@ -28,6 +28,8 @@ public class SocketServer : MonoBehaviour
 
 	private SocketServerInfo _serverInfo = null;
 
+	private IEnumerator _sendServerInfoBroadcastCoroutine = null;
+
 	#endregion
 
 	#region Properties
@@ -83,9 +85,10 @@ public class SocketServer : MonoBehaviour
 		{
 			if(_isStarted)
 			{
-				_isBroadcastingServerInfo = true;
-				_serverInfo 		      = new SocketServerInfo(_serverEndPoint.Address.ToString(), serverInfo);
-				StartCoroutine(SendServerInfoBroadcastCoroutine());
+				_isBroadcastingServerInfo         = true;
+				_serverInfo 		      		  = new SocketServerInfo(_serverEndPoint.Address.ToString(), serverInfo);
+				_sendServerInfoBroadcastCoroutine = SendServerInfoBroadcastCoroutine();
+				StartCoroutine(_sendServerInfoBroadcastCoroutine);
 			}
 			else
 				LogManager.Instance.LogMessage("Can not start broadcasting server info if the server is not started");
@@ -112,8 +115,9 @@ public class SocketServer : MonoBehaviour
 	{
 		if(_isBroadcastingServerInfo)
 		{
-			StopCoroutine(SendServerInfoBroadcastCoroutine());
-			_isBroadcastingServerInfo      = false;
+			StopCoroutine(_sendServerInfoBroadcastCoroutine);
+			_sendServerInfoBroadcastCoroutine = null;
+			_isBroadcastingServerInfo         = false;
 		}
 	}
 
