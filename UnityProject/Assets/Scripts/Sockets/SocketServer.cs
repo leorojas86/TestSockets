@@ -15,6 +15,7 @@ public class SocketServer : MonoBehaviour
 	private TcpListener _tcpClientsListener 		    = null;
 	private Thread _listenIncomingClientsThread 		= null;
 	private List<TcpClient> _clients        		    = new List<TcpClient>();
+	private List<TcpClient> _recentlyConnectedClients   = new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    = null;
 
 	private System.Action<TcpClient> _onClientConnected  = null;
@@ -97,16 +98,13 @@ public class SocketServer : MonoBehaviour
 	{
 		if(_isStarted)
 		{
-			_isStarted = false;
-
+			_isStarted      = false;
 			_serverEndPoint = null;
-			_listenIncomingClientsThread = null;
-			_tcpClientsListener.Stop();
-			_tcpClientsListener = null;
 
 			_clients.Clear();
 
 			StopBroadcastMessages();
+			StopProcessingIncomingClients();
 		}
 	}
 
@@ -117,6 +115,14 @@ public class SocketServer : MonoBehaviour
 			StopCoroutine(SendServerInfoBroadcastCoroutine());
 			_isBroadcastingServerInfo      = false;
 		}
+	}
+
+	private void StopProcessingIncomingClients()//TODO: Stop processing incoming clients as soon as possible
+	{
+		_listenIncomingClientsThread = null;
+		
+		_tcpClientsListener.Stop();
+		_tcpClientsListener = null;
 	}
 
 	private IEnumerator SendServerInfoBroadcastCoroutine()
@@ -156,9 +162,20 @@ public class SocketServer : MonoBehaviour
 			Thread listenClientMessagesThread = new Thread(new ParameterizedThreadStart(ProcessClientMessagesThread));
 			listenClientMessagesThread.Start(client);
 
-			_clients.Add(client);
+			_recentlyConnectedClients.Add(client);
+			//_clients.Add(client);
 
-			NotifyOnClientConnected(client);
+			//NotifyOnClientConnected(client);
+		}
+	}
+
+	void Update()
+	{
+		for(int x = 0; x < _recentlyConnectedClients.Count; x++)
+		{
+			TcpClient currentClient = _recentlyConnectedClients[x];
+			_clients.Add(currentClient);
+			NotifyOnClientConnected(currentClient);
 		}
 	}
 
@@ -236,6 +253,8 @@ public class SocketServer : MonoBehaviour
 
 			//Debug.Log("SocketsManager.Instance.InvokeAction");
 			_onClientConnected(client);
+
+			Debug.Log("NotifyOnClientConnected completed");
 		}
 	}
 

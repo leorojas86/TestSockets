@@ -95,21 +95,13 @@ public class Lobby : MonoBehaviour
 
 	private void OnClientConnected(TcpClient client)
 	{
-		StartCoroutine(LoadSceneCoroutine());
+		GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
+		Application.LoadLevel(gameInfo.type + "Scene");
 	}
 
 	private static GameInfo GetGameInfo(SocketServerInfo serverInfo)
 	{
 		return LitJson.JsonMapper.ToObject<GameInfo>(serverInfo.info);
-	}
-
-	private IEnumerator LoadSceneCoroutine()
-	{
-		yield return new WaitForEndOfFrame();
-
-		Debug.Log("LoadSceneCoroutine");
-		//GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
-		//Application.LoadLevel(gameInfo.type + "Scene");
 	}
 
 	#endregion
