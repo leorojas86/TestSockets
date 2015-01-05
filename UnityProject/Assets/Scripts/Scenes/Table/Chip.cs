@@ -57,8 +57,6 @@ public class Chip : MonoBehaviour
 		CheckForStartDragging();
 		UpdateDragging();
 		CheckForStopDragging();
-
-		SocketsManager.Instance.Update();
 	}
 
 	private void CheckForStartDragging()

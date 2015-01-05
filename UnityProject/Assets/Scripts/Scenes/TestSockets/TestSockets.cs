@@ -17,11 +17,6 @@ public class TestSockets : MonoBehaviour
 		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
 	}
 
-	void Update()
-	{
-		SocketsManager.Instance.Update();
-	}
-
 	void OnGUI()
 	{
 		// Begin a scroll view. All rects are calculated automatically - 

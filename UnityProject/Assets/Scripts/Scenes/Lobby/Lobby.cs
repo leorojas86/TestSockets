@@ -38,11 +38,6 @@ public class Lobby : MonoBehaviour
 		SocketsManager.Instance.IsLogEnabled = true;
 	}
 
-	void Update()
-	{
-		SocketsManager.Instance.Update();
-	}
-
 	void OnGUI()
 	{
 		if(SocketsManager.Instance.Server.IsStarted)

@@ -10,7 +10,7 @@ using System;
 /// <summary>
 /// http://tech.pro/tutorial/704/csharp-tutorial-simple-threaded-tcp-server
 /// </summary>
-public class SocketsManager 
+public class SocketsManager : MonoBehaviour
 {
 	#region Structs
 
@@ -62,7 +62,7 @@ public class SocketsManager
 			if(_instance != null)
 				return _instance; 
 
-			_instance = new SocketsManager();
+			_instance = TestSocketsManagers.Instance.CreateNewManagerInstance<SocketsManager>();
 			return _instance;
 		} 
 	}
@@ -132,7 +132,7 @@ public class SocketsManager
 		_client.Disconnect();
 	}
 
-	public void Update()
+    void Update()
 	{
 		for(int x = 0; x < _invokingActions.Count; x++)
 		{
@@ -153,6 +153,15 @@ public class SocketsManager
 	{
 		if(_isLogEnabled)
 			Debug.Log(message);
+	}
+
+	void OnDestroy()
+	{
+		Debug.Log("OnDestroy");
+
+		_server.StopServer();
+		_server.StopBroadcastMessages();
+		_client.Disconnect();
 	}
 
 	#endregion
