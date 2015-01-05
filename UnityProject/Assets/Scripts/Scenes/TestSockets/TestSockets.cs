@@ -37,11 +37,11 @@ public class TestSockets : MonoBehaviour
 		{
 			if(!SocketsManager.Instance.Server.IsStarted)
 			{
-				SocketsManager.Instance.StartServer(OnClientConnected);
+				SocketsManager.Instance.Server.StartServer(OnClientConnected);
 				SocketsManager.Instance.Server.StartSendingServerInfoBroadcast(string.Empty);
 			}
 			else
-				SocketsManager.Instance.StopServer();
+				SocketsManager.Instance.Server.StopServer();
 		}
 
 		if(SocketsManager.Instance.Server.IsStarted)
@@ -56,10 +56,10 @@ public class TestSockets : MonoBehaviour
 
 		if(GUI.Button(new Rect(10,410,100,30), clientButtonText))
 		{
-			if(!SocketsManager.Instance.Client.IsConnected)
-				SocketsManager.Instance.FindServers(OnServerFound, null);
+			if(SocketsManager.Instance.Client.IsConnected)
+				SocketsManager.Instance.Client.Disconnect();
 			else
-				SocketsManager.Instance.DisconnectClientFromServer();
+				SocketsManager.Instance.Client.FindServers(OnServerFound, null);
 		}
 
 		if(SocketsManager.Instance.Client.IsConnected)
@@ -84,7 +84,7 @@ public class TestSockets : MonoBehaviour
 
 	private void ConnectClient(IPAddress serverAddress)
 	{
-		SocketsManager.Instance.ConnectClientToServer(serverAddress);
+		SocketsManager.Instance.Client.ConnectToServer(serverAddress);
 		SocketsManager.Instance.Client.SendMessageToServer("Hello Server!");
 		SocketsManager.Instance.Client.SendMessageToServer("Hello Server2!");
 	}

@@ -63,16 +63,16 @@ public class SocketServer : MonoBehaviour
 
 	#region Methods
 
-	public void StartServer(IPAddress ip, int port, System.Action<TcpClient> onClientConnected)
+	public void StartServer(System.Action<TcpClient> onClientConnected)
 	{
 		if(!_isStarted)
 		{
-			_isStarted = true;
-
+			IPAddress ip 		 		 = NetworkUtils.GetMyIP4Address();
+			_isStarted 					 = true;
 			_onClientConnected 			 = onClientConnected;
-			_serverEndPoint 	 		 = new IPEndPoint(ip, port);
+			_serverEndPoint 	 		 = new IPEndPoint(ip, SocketsManager.Instance.Port);
 			_tcpClientsListener  		 = new TcpListener(_serverEndPoint);
-			_listenIncomingClientsThread = new Thread(new ThreadStart(ProcessIncomingClientsThread));
+			_listenIncomingClientsThread = new Thread(new ThreadStart(ListenIncomingClientsThread));
 			_listenIncomingClientsThread.Start();
 		}
 		else
@@ -152,7 +152,7 @@ public class SocketServer : MonoBehaviour
 		//}
 	}
 	
-	private void ProcessIncomingClientsThread()
+	private void ListenIncomingClientsThread()
 	{
 		_tcpClientsListener.Start();
 		
@@ -267,17 +267,20 @@ public class SocketServer : MonoBehaviour
 		if(OnClientMessage != null)
 		{
 			SocketMessage socketMessage = new SocketMessage(client, bytes);
-			SocketsManager.Instance.InvokeAction(OnClientMessage, socketMessage);
-			//OnClientMessage(socketMessage);
+			OnClientMessage(socketMessage);
 		}
 	}
 
 	private void NotifyOnClientDisconnected(TcpClient client)
 	{
 		if(OnClientDisconnected != null)
-		{
-			SocketsManager.Instance.InvokeAction(OnClientDisconnected, client);
-		}
+			OnClientDisconnected(client);
+	}
+
+	void OnDestroy()
+	{
+		StopServer();
+		StopBroadcastMessages();
 	}
 
 	#endregion

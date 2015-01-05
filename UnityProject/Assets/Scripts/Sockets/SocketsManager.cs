@@ -12,32 +12,6 @@ using System;
 /// </summary>
 public class SocketsManager : MonoBehaviour
 {
-	#region Structs
-
-	public interface IActionInvoker
-	{
-		void Invoke();
-	}
-
-	public class InvokeActionData<T> : IActionInvoker
-	{
-		public Action<T> action = null;
-		public T actionParam;
-
-		public InvokeActionData(Action<T> action, T actionParam)
-		{
-			this.action 	 = action;
-			this.actionParam = actionParam;
-		}
-
-		public void Invoke()
-		{
-			action(actionParam);
-		}
-	}
-
-	#endregion
-
 	#region Variables
 
 	private static SocketsManager _instance = null;
@@ -46,8 +20,6 @@ public class SocketsManager : MonoBehaviour
 	private SocketClient _client = null;
 
 	private int _port = 3000;
-
-	private List<IActionInvoker> _invokingActions = new List<IActionInvoker>();
 
 	private bool _isLogEnabled = false;
 
@@ -99,69 +71,10 @@ public class SocketsManager : MonoBehaviour
 		_client = gameObject.AddComponent<SocketClient>();
 	}
 
-	public void StartServer(System.Action<TcpClient> onClientConnected)
-	{
-		IPAddress myAddress = NetworkUtils.GetMyIP4Address();
-		_server.StartServer(myAddress, _port, onClientConnected);
-	}
-
-	public void StopServer()
-	{
-		_server.StopServer();
-	}
-
-	public void FindServers(System.Action<SocketServerInfo> onServerFound, System.Action<SocketServerInfo> onServerLost)
-	{
-		_client.FindServers(_port, onServerFound, onServerLost);
-	}
-
-	public void StopFindingServers()
-	{
-		_client.StopFindingServers();
-	}
-
-	public bool ConnectClientToServer(IPAddress serverAddress)
-	{
-		return _client.ConnectToServer(serverAddress, _port);
-	}
-
-	public void DisconnectClientFromServer()
-	{
-		_client.Disconnect();
-	}
-
-    void Update()
-	{
-		for(int x = 0; x < _invokingActions.Count; x++)
-		{
-			IActionInvoker invokeAction = _invokingActions[x];
-			invokeAction.Invoke();
-		}
-
-		_invokingActions.Clear();
-	}
-
-	public void InvokeAction<T>(Action<T> action, T param)
-	{
-		Debug.Log("InvokeAction 1");
-		InvokeActionData<T> invokeData = new InvokeActionData<T>(action, param);
-		Debug.Log("InvokeAction 2");
-		_invokingActions.Add(invokeData);
-	}
-
 	public void Log(string message)
 	{
 		if(_isLogEnabled)
 			Debug.Log(message);
-	}
-
-	void OnDestroy()
-	{
-		Debug.Log("OnDestroy");
-
-		_server.StopServer();
-		_server.StopBroadcastMessages();
-		_client.Disconnect();
 	}
 
 	#endregion

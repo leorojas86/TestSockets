@@ -34,7 +34,7 @@ public class SocketClient : MonoBehaviour
 	private List<SocketServerInfo> _foundServers         = new List<SocketServerInfo>();
 	private List<SocketServerInfo> _recentlyFoundServers = new List<SocketServerInfo>();
 
-	private Thread _listenBroadcastMessagesThread = null;
+	private Thread _findServersThread = null;
 	private IEnumerator _checkForLostServersCoroutine     = null;
 
 	private IEnumerator _processServerMessagesCoroutine = null;
@@ -67,12 +67,12 @@ public class SocketClient : MonoBehaviour
 
 	#region Methods
 
-	public void FindServers(int port, System.Action<SocketServerInfo> onServerFound, System.Action<SocketServerInfo> onServerLost)
+	public void FindServers(System.Action<SocketServerInfo> onServerFound, System.Action<SocketServerInfo> onServerLost)
 	{
 		if(!_isFindingServers)
 		{
-			_listenBroadcastMessagesThread = new Thread(new ParameterizedThreadStart(ListenBroadcastMessagesThread));
-			_listenBroadcastMessagesThread.Start(port);
+			_findServersThread = new Thread(new ParameterizedThreadStart(FindServersThread));
+			_findServersThread.Start(SocketsManager.Instance.Port);
 			//StartCoroutine(_listenBroadcastMessagesThread);
 
 			_checkForLostServersCoroutine = CheckForLostServersCoroutine();
@@ -92,7 +92,7 @@ public class SocketClient : MonoBehaviour
 		if(_isFindingServers)
 		{
 			//StopCoroutine(_listenBroadcastMessagesThread);
-			_listenBroadcastMessagesThread = null;
+			_findServersThread = null;
 
 			StopCoroutine(_checkForLostServersCoroutine);
 			_checkForLostServersCoroutine  = null;
@@ -106,11 +106,11 @@ public class SocketClient : MonoBehaviour
 		}
 	}
 
-	public bool ConnectToServer(IPAddress serverAddress, int port)
+	public bool ConnectToServer(IPAddress serverAddress)
 	{
 		if(!_isConnected)
 		{
-			_connectedServerEndPoint = new IPEndPoint(serverAddress, port);
+			_connectedServerEndPoint = new IPEndPoint(serverAddress, SocketsManager.Instance.Port);
 			_tcpClient 				 = new TcpClient();
 
 			try
@@ -122,13 +122,11 @@ public class SocketClient : MonoBehaviour
 				StartCoroutine(_processServerMessagesCoroutine);
 
 				_isConnected = true;
-
-				//StopFindingServers();
 				return true;
 			}
 			catch(Exception e)
 			{
-				LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + port + " exception = " + e.ToString());
+				LogManager.Instance.LogMessage("Could not connect to server at ip " + serverAddress + " using port = " + _connectedServerEndPoint.Port + " exception = " + e.ToString());
 			}
 		}
 		else
@@ -204,7 +202,7 @@ public class SocketClient : MonoBehaviour
 		//}
 	}
 
-	private void ListenBroadcastMessagesThread(object portObject) 
+	private void FindServersThread(object portObject) 
 	{
 		int port 		   = (int)portObject;
 		UdpClient listener = new UdpClient(port);
@@ -212,7 +210,7 @@ public class SocketClient : MonoBehaviour
 		
 		try 
 		{
-			while(_listenBroadcastMessagesThread != null) 
+			while(_findServersThread != null) 
 			{
 				LogManager.Instance.LogMessage("Waiting for broadcast");
 				byte[] bytes 				= listener.Receive(ref groupEP);
@@ -300,19 +298,13 @@ public class SocketClient : MonoBehaviour
 	private void NotifyOnServerFound(SocketServerInfo serverInfo)
 	{
 		if(_onServerFound != null)
-		{
-			SocketsManager.Instance.InvokeAction(_onServerFound, serverInfo);
-			//_onServerFound(serverInfo);
-		}
+			_onServerFound(serverInfo);
 	}
 
 	private void NotifyOnServerLost(SocketServerInfo serverInfo)
 	{
 		if(_onServerLost != null)
-		{
-			SocketsManager.Instance.InvokeAction(_onServerLost, serverInfo);
-			//_onServerLost(serverInfo);
-		}
+			_onServerLost(serverInfo);
 	}
 
 	private void NotifyOnServerMessage(TcpClient sender, byte[] bytes)
@@ -322,20 +314,20 @@ public class SocketClient : MonoBehaviour
 		if(OnServerMessage != null)
 		{
 			SocketMessage socketMessage = new SocketMessage(sender, bytes);
-
-			SocketsManager.Instance.InvokeAction(OnServerMessage, socketMessage);
-			//OnServerMessage(socketMessage);
+			OnServerMessage(socketMessage);
 		}
 	}
 
 	private void NotifyOnServerDisconnected()
 	{
 		if(OnServerDisconnected != null)
-		{
-			SocketsManager.Instance.InvokeAction(OnServerDisconnected, _tcpClient);
-		}
+			OnServerDisconnected(_tcpClient);
 	}
 
+	void OnDestroy()
+	{
+		Disconnect();
+	}
 	
 	#endregion
 }

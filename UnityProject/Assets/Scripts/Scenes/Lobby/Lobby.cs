@@ -34,7 +34,7 @@ public class Lobby : MonoBehaviour
 
 	void Start() 
 	{
-		SocketsManager.Instance.FindServers(null, null);
+		SocketsManager.Instance.Client.FindServers(null, null);
 		SocketsManager.Instance.IsLogEnabled = true;
 	}
 
@@ -47,8 +47,8 @@ public class Lobby : MonoBehaviour
 
 			if(GUI.Button(new Rect(10, 300, 100, 30), "Stop Game"))
 			{
-				SocketsManager.Instance.StopServer();
-				SocketsManager.Instance.FindServers(null, null);
+				SocketsManager.Instance.Server.StopServer();
+				SocketsManager.Instance.Client.FindServers(null, null);
 			}
 		}
 		else
@@ -62,8 +62,11 @@ public class Lobby : MonoBehaviour
 
 				if(GUI.Button(new Rect(10, y, 200, 30), gameInfo.type + "@" + serverInfo.ip))
 				{
-					if(SocketsManager.Instance.ConnectClientToServer(serverInfo.GetIPAddress()))
+					if(SocketsManager.Instance.Client.ConnectToServer(serverInfo.GetIPAddress()))
+					{
+						SocketsManager.Instance.Client.StopFindingServers();
 						Application.LoadLevel(gameInfo.type + "Scene");
+					}
 				}
 				
 				y += 50;
@@ -79,8 +82,8 @@ public class Lobby : MonoBehaviour
 				
 				if(GUI.Button(new Rect(10, y, 200, 30), text))
 				{
-					SocketsManager.Instance.StopFindingServers();
-					SocketsManager.Instance.StartServer(OnClientConnected);
+					SocketsManager.Instance.Client.StopFindingServers();
+					SocketsManager.Instance.Server.StartServer(OnClientConnected);
 					GameInfo serverInfo   = new GameInfo(currentGame);
 					string serverInfoJson = LitJson.JsonMapper.ToJson(serverInfo);
 
