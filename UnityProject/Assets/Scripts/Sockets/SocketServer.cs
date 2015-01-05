@@ -8,13 +8,12 @@ using System.Threading;
 using System.Net;
 using System.IO;
 
-public class SocketServer
+public class SocketServer : MonoBehaviour
 {
 	#region Variables
 
 	private TcpListener _tcpClientsListener 		    = null;
 	private Thread _listenIncomingClientsThread 		= null;
-	private Thread _sendServerInfoBroadcastThread		= null;
 	private List<TcpClient> _clients        		    = new List<TcpClient>();
 	private IPEndPoint _serverEndPoint				    = null;
 
@@ -59,14 +58,6 @@ public class SocketServer
 
 	#endregion
 
-	#region Constructors
-	
-	public SocketServer()
-	{
-	}
-
-	#endregion
-
 	#region Methods
 
 	public void StartServer(IPAddress ip, int port, System.Action<TcpClient> onClientConnected)
@@ -91,11 +82,9 @@ public class SocketServer
 		{
 			if(_isStarted)
 			{
-				_serverInfo 				   = new SocketServerInfo(_serverEndPoint.Address.ToString(), serverInfo);
-				_sendServerInfoBroadcastThread = new Thread(new ThreadStart(SendServerInfoBroadcast));
-				_sendServerInfoBroadcastThread.Start();
-
 				_isBroadcastingServerInfo = true;
+				_serverInfo 		      = new SocketServerInfo(_serverEndPoint.Address.ToString(), serverInfo);
+				StartCoroutine(SendServerInfoBroadcastCoroutine());
 			}
 			else
 				LogManager.Instance.LogMessage("Can not start broadcasting server info if the server is not started");
@@ -125,12 +114,12 @@ public class SocketServer
 	{
 		if(_isBroadcastingServerInfo)
 		{
-			_sendServerInfoBroadcastThread = null;
+			StopCoroutine(SendServerInfoBroadcastCoroutine());
 			_isBroadcastingServerInfo      = false;
 		}
 	}
 
-	private void SendServerInfoBroadcast()
+	private IEnumerator SendServerInfoBroadcastCoroutine()
 	{
 		Socket broadcastSocket 			= new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
 		broadcastSocket.EnableBroadcast = true;
@@ -139,20 +128,18 @@ public class SocketServer
 		string serverInfo 				= SocketServerInfo.ToJson(_serverInfo);
 		byte[] messageBytes    			= Encoding.ASCII.GetBytes(serverInfo);
 
-		try
-		{
-			while(_sendServerInfoBroadcastThread != null)
+		//try
+		//{
+			while(_isBroadcastingServerInfo)
 			{
 				broadcastSocket.SendTo(messageBytes, endPoint);
-				Thread.Sleep(500);//Sent message every 0.5 seconds
-
-				//LogManager.Instance.LogMessage("Sending broadcast message");
+				yield return new WaitForSeconds(0.5f);//Sent message every 0.5 seconds
 			}
-		}
-		catch(Exception e)
-		{
-			LogManager.Instance.LogMessage("Exception sending broadcast message = " + e.ToString());
-		}
+		//}
+		//catch(Exception e)
+		//{
+			//LogManager.Instance.LogMessage("Exception sending broadcast message = " + e.ToString());
+		//}
 	}
 	
 	private void ProcessIncomingClientsThread()
@@ -241,10 +228,14 @@ public class SocketServer
 
 	private void NotifyOnClientConnected(TcpClient client)
 	{
+		Debug.Log("NotifyOnClientConnected");
+
 		if(_onClientConnected != null)
 		{
-			SocketsManager.Instance.InvokeAction(_onClientConnected, client);
-			//_onClientConnected(client);
+			//SocketsManager.Instance.InvokeAction(_onClientConnected, client);
+
+			//Debug.Log("SocketsManager.Instance.InvokeAction");
+			_onClientConnected(client);
 		}
 	}
 

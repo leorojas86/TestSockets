@@ -95,9 +95,7 @@ public class Lobby : MonoBehaviour
 
 	private void OnClientConnected(TcpClient client)
 	{
-		//Application.LoadLevel("TableScene");
-		GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
-		StartCoroutine(LoadSceneCoroutine(gameInfo.type + "Scene"));
+		StartCoroutine(LoadSceneCoroutine());
 	}
 
 	private static GameInfo GetGameInfo(SocketServerInfo serverInfo)
@@ -105,11 +103,13 @@ public class Lobby : MonoBehaviour
 		return LitJson.JsonMapper.ToObject<GameInfo>(serverInfo.info);
 	}
 
-	private IEnumerator LoadSceneCoroutine(string scene)
+	private IEnumerator LoadSceneCoroutine()
 	{
 		yield return new WaitForEndOfFrame();
 
-		Application.LoadLevel(scene);
+		Debug.Log("LoadSceneCoroutine");
+		//GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
+		//Application.LoadLevel(gameInfo.type + "Scene");
 	}
 
 	#endregion

@@ -42,8 +42,8 @@ public class SocketsManager : MonoBehaviour
 
 	private static SocketsManager _instance = null;
 
-	private SocketServer _server = new SocketServer();
-	private SocketClient _client = new SocketClient();
+	private SocketServer _server = null;
+	private SocketClient _client = null;
 
 	private int _port = 3000;
 
@@ -90,16 +90,14 @@ public class SocketsManager : MonoBehaviour
 	}
 
 	#endregion
-
-	#region Constructors
-
-	private SocketsManager()
-	{
-	}
-
-	#endregion
-
+	
 	#region Methods
+
+	void Awake()
+	{
+		_server = gameObject.AddComponent<SocketServer>();
+		_client = gameObject.AddComponent<SocketClient>();
+	}
 
 	public void StartServer(System.Action<TcpClient> onClientConnected)
 	{
@@ -145,7 +143,9 @@ public class SocketsManager : MonoBehaviour
 
 	public void InvokeAction<T>(Action<T> action, T param)
 	{
+		Debug.Log("InvokeAction 1");
 		InvokeActionData<T> invokeData = new InvokeActionData<T>(action, param);
+		Debug.Log("InvokeAction 2");
 		_invokingActions.Add(invokeData);
 	}
 

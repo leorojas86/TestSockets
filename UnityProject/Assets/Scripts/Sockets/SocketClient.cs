@@ -8,7 +8,7 @@ using System.Threading;
 using System.Net;
 using System.IO;
 
-public class SocketClient 
+public class SocketClient : MonoBehaviour
 {
 	#region Constants
 
@@ -59,14 +59,6 @@ public class SocketClient
 	public List<SocketServerInfo> FoundServers
 	{
 		get { return _foundServers; }
-	}
-
-	#endregion
-
-	#region Constructors
-	
-	public SocketClient()
-	{
 	}
 
 	#endregion
