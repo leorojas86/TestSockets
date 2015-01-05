@@ -154,59 +154,57 @@ public class SocketServer : MonoBehaviour
 		
 		while(_listenIncomingClientsThread != null)
 		{
-			//blocks until a client has connected to the server
 			TcpClient client = _tcpClientsListener.AcceptTcpClient();
-			
-			//create a thread to handle communication 
-			//with connected client
-			Thread listenClientMessagesThread = new Thread(new ParameterizedThreadStart(ProcessClientMessagesThread));
-			listenClientMessagesThread.Start(client);
-
 			_recentlyConnectedClients.Add(client);
-			//_clients.Add(client);
-
-			//NotifyOnClientConnected(client);
 		}
 	}
 
 	void Update()
 	{
-		for(int x = 0; x < _recentlyConnectedClients.Count; x++)
+		if(_recentlyConnectedClients.Count > 0)
 		{
-			TcpClient currentClient = _recentlyConnectedClients[x];
-			_clients.Add(currentClient);
-			NotifyOnClientConnected(currentClient);
+			for(int x = 0; x < _recentlyConnectedClients.Count; x++)
+			{
+				TcpClient currentClient = _recentlyConnectedClients[x];
+				_clients.Add(currentClient);
+
+				NotifyOnClientConnected(currentClient);
+
+				StartCoroutine(ProcessClientMessagesCoroutine(currentClient));
+			}
+
+			_recentlyConnectedClients.Clear();
 		}
 	}
 
-	private void ProcessClientMessagesThread(object client)
+	private IEnumerator ProcessClientMessagesCoroutine(TcpClient client)
 	{
-		try
-		{
-			TcpClient tcpClient = (TcpClient)client;
-
+		//try
+		//{
 			while(_isStarted)
 			{
 				//if(tcpClient.Connected)
 				//{
-					byte[] bytes = NetworkUtils.ReadBytesFromTCPConnection(tcpClient);
+					byte[] bytes = NetworkUtils.ReadBytesFromTCPConnection(client);
 
 					if(bytes != null)
 					{
 						List<byte[]> messages = NetworkUtils.GetMessagesFromBytes(bytes);
 
 						for(int x = 0; x < messages.Count; x++)
-							NotifyOnClientMessage(tcpClient, messages[x]);
+							NotifyOnClientMessage(client, messages[x]);
 					}
 				//}
 				//else
 					//NotifyOnClientDisconnected(tcpClient);
+
+				yield return new WaitForEndOfFrame();
 			}
-		}
-		catch(Exception e)
-		{
-			LogManager.Instance.LogMessage("Exception while processing client messages, exception = " + e.ToString());
-		}
+		//}
+		//catch(Exception e)
+		//{
+			//LogManager.Instance.LogMessage("Exception while processing client messages, exception = " + e.ToString());
+		//}
 }
 
 	public void SendMessageToClients(string message)
