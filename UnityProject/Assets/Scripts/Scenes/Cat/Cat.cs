@@ -37,7 +37,6 @@ public class Cat : MonoBehaviour
 				SimpleButton button = transform.Find(buttonName).GetComponent<SimpleButton>();
 				button.OnClick 		= OnSlotButtonClick;
 				button.customTag    = new Vector2(x, y);
-				button.GetComponent<SpriteRenderer>().sprite = spriteEmpty;
 
 				collum.Add(button);
 			}
@@ -45,13 +44,28 @@ public class Cat : MonoBehaviour
 			_slotsButtons.Add(collum);
 		}
 
-		CatMultiplayerManager.Instance.StartNewGame();
-		CatMultiplayerManager.Instance.OnGameAction = OnGameAction;
-
-		UpdateTurnText();
-
+		CatMultiplayerManager.Instance.OnGameAction         = OnGameAction;
 		SocketsManager.Instance.Server.OnClientDisconnected = OnClientDisconnected;
 		SocketsManager.Instance.Client.OnServerDisconnected = OnServerDisconnected;
+
+		StartNewGame();
+	}
+
+	private void StartNewGame()
+	{
+		for(int x = 0; x < CatMultiplayerManager.Instance.SlotsSize; x++)
+		{
+			List<SimpleButton> collum = new List<SimpleButton>(); 
+			
+			for(int y = 0; y < CatMultiplayerManager.Instance.SlotsSize; y++)
+			{
+				SimpleButton button 						 = _slotsButtons[x][y];
+				button.GetComponent<SpriteRenderer>().sprite = spriteEmpty;
+			}
+		}
+
+		CatMultiplayerManager.Instance.StartNewGame();
+		UpdateTurnText();
 	}
 
 	private void OnClientDisconnected(TcpClient client)
@@ -74,17 +88,22 @@ public class Cat : MonoBehaviour
 
 	private void UpdateWinnerText()
 	{
-		text.text = "Winner " + CatMultiplayerManager.Instance.Winner.ToString();
+		text.text = "Winner " + CatMultiplayerManager.Instance.Winner.ToString().Replace("Player", string.Empty);
 	}
 
 	private void OnSlotButtonClick(SimpleButton sender)
 	{
-		Vector2 slotPosition 			= (Vector2)sender.customTag;
-		SelectSlotInput selectSlotInput = new SelectSlotInput((int)slotPosition.x, (int)slotPosition.y, CatMultiplayerManager.Instance.MyPlayer);
+		if(CatMultiplayerManager.Instance.Winner == CatMultiplayerManager.Player.None)
+		{
+			Vector2 slotPosition 			= (Vector2)sender.customTag;
+			SelectSlotInput selectSlotInput = new SelectSlotInput((int)slotPosition.x, (int)slotPosition.y, CatMultiplayerManager.Instance.MyPlayer);
 
-		Debug.Log("OnSlotButtonClick slotPosition = " + slotPosition);
-		CatMultiplayerManager.Instance.ProcessInput(selectSlotInput);
-		//sender.GetComponent<SpriteRenderer>().sprite = spriteX;
+			Debug.Log("OnSlotButtonClick slotPosition = " + slotPosition);
+			CatMultiplayerManager.Instance.ProcessInput(selectSlotInput);
+			//sender.GetComponent<SpriteRenderer>().sprite = spriteX;
+		}
+		else
+			StartNewGame();
 	}
 
 	private void OnGameAction(GameAction gameAction)
