@@ -53,7 +53,6 @@ public class CatMultiplayerManager : MultiplayerManager
 	private int _slotsSize 				= 3;
 	private Player _currentPlayerTurn 	= Player.None;
 	private Player _player 			  	= Player.None;
-
 	private Player _winner 	 			= Player.None;
 	private List<SlotInfo> _winnerSlots = null;   
 
@@ -115,7 +114,14 @@ public class CatMultiplayerManager : MultiplayerManager
 	{
 		base.StartNewGame();
 
-		_player = SocketsManager.Instance.Server.IsStarted ? Player.PlayerX : Player.PlayerO;
+		_player 	 = SocketsManager.Instance.Server.IsStarted ? Player.PlayerX : Player.PlayerO;
+		_winner      = Player.None;
+		_winnerSlots = null;
+
+		if(_currentPlayerTurn == Player.None || _currentPlayerTurn == Player.PlayerX)
+			_currentPlayerTurn = Player.PlayerO;
+		else
+			_currentPlayerTurn = Player.PlayerX;
 
 		for(int x = 0; x < _slotsSize; x++)
 		{
@@ -126,14 +132,6 @@ public class CatMultiplayerManager : MultiplayerManager
 			
 			_slotsRows.Add(collum);
 		}
-
-		if(_currentPlayerTurn == Player.None || _currentPlayerTurn == Player.PlayerX)
-			_currentPlayerTurn = Player.PlayerO;
-		else
-			_currentPlayerTurn = Player.PlayerX;
-
-		_winner 		= Player.None;
-		_winnerSlots 	= null;
 	}
 
 	public override bool ProcessInput(PlayerInput input)
@@ -178,25 +176,35 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	private void CheckForWinner()
 	{
+		Debug.Log("CheckForWinner");
+
 		//Check Rows
-		for(int x = 0; x < _slotsRows.Count; x++)
+		for(int x = 0; x < _slotsSize; x++)
 		{
 			List<Player> currentRow = _slotsRows[x];
-
 			Player player 			= currentRow[0];
 			List<SlotInfo> slots	= new List<SlotInfo>();
+
 			slots.Add(new SlotInfo(x, 0));
 
-			for(int y = 1; y < currentRow.Count; y++)
+			string row = "row " + x + " " + player + ",";
+
+			for(int y = 1; y < _slotsSize; y++)
 			{
-				if(player != currentRow[y])
+				Player currentPlayer = currentRow[y];
+				row 				+= currentPlayer + ",";
+
+				if(player != currentPlayer)
 					break;
 
 				slots.Add(new SlotInfo(x, y));
 			}
 
+			Debug.Log(row);
+
 			if(slots.Count == _slotsSize)
 			{
+				Debug.Log("Winner on rows = " + player);
 				_winner 		= player;
 				_winnerSlots 	= slots;
 				return;
@@ -207,33 +215,41 @@ public class CatMultiplayerManager : MultiplayerManager
 		for(int y = 0; y < _slotsSize; y++)
 		{
 			List<Player> currentCollum = new List<Player>();
+			Player player 			   = _slotsRows[0][y];
+			List<SlotInfo> slots	   = new List<SlotInfo>();
 
-			Player player 			= _slotsRows[0][y];
-			List<SlotInfo> slots	= new List<SlotInfo>();
 			slots.Add(new SlotInfo(0, y));
 
-			for(int x = 0; x < _slotsSize; x++)
+			string colum = "colum " + y + " " + player + ",";
+
+			for(int x = 1; x < _slotsSize; x++)
 			{
-				if(player != _slotsRows[x][y])
+				Player currentPlayer = _slotsRows[x][y];
+				colum 				+= currentPlayer + ",";
+
+				if(player != currentPlayer)
 					break;
 
 				slots.Add(new SlotInfo(x, y));
 			}
 
+			Debug.Log(colum);
+
 			if(slots.Count == _slotsSize)
 			{
+				Debug.Log("Winner on collums = " + player);
 				_winner 		= player;
 				_winnerSlots 	= slots;
 				return;
 			}
 		}
 
-		//Check next 
+		//Check bottom-left to top/right 
 		Player player1 			= _slotsRows[0][0];
 		List<SlotInfo> slots1	= new List<SlotInfo>();
 		slots1.Add(new SlotInfo(0, 0));
 
-		for(int x = 1, y = 1; x < _slotsRows.Count; x++, y++)
+		for(int x = 1, y = 1; x < _slotsSize; x++, y++)
 		{
 			if(player1 != _slotsRows[x][y])
 				break;
@@ -243,17 +259,18 @@ public class CatMultiplayerManager : MultiplayerManager
 
 		if(slots1.Count == _slotsSize)
 		{
+			Debug.Log("Winner on bottom-left to top/right = " + player1);
 			_winner 		= player1;
 			_winnerSlots 	= slots1;
 			return;
 		}
 
-		//Check next 
+		//Check bottom-right to top-left
 		Player player2 			= _slotsRows[2][0];
 		List<SlotInfo> slots2	= new List<SlotInfo>();
 		slots2.Add(new SlotInfo(2, 0));
 		
-		for(int x = 1, y = 1; x < _slotsRows.Count; x--, y++)
+		for(int x = 1, y = 1; x < _slotsSize; x--, y++)
 		{
 			if(player2 != _slotsRows[x][y])
 				break;
@@ -263,10 +280,13 @@ public class CatMultiplayerManager : MultiplayerManager
 		
 		if(slots2.Count == _slotsSize)
 		{
+			Debug.Log("Winner on bottom-right to top-left = " + player2);
 			_winner 		= player2;
 			_winnerSlots 	= slots2;
 			return;
 		}
+
+		Debug.Log ("No winner found");
 	}
 
 	#endregion
