@@ -48,7 +48,7 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	private static CatMultiplayerManager _instance = null;
 
-	private List<List<Player>> _slotsRows = new List<List<Player>>();
+	private List<List<Player>> _slotsCollums = new List<List<Player>>();
 
 	private int _slotsSize 				= 3;
 	private Player _currentPlayerTurn 	= Player.None;
@@ -130,7 +130,7 @@ public class CatMultiplayerManager : MultiplayerManager
 			for(int y = 0; y < _slotsSize; y++)
 				collum.Add(Player.None);
 			
-			_slotsRows.Add(collum);
+			_slotsCollums.Add(collum);
 		}
 	}
 
@@ -144,7 +144,7 @@ public class CatMultiplayerManager : MultiplayerManager
 
 			if(selectSlotInput != null)
 			{
-				if(selectSlotInput.player == _currentPlayerTurn && _slotsRows[selectSlotInput.slotX][selectSlotInput.slotY] == Player.None)
+				if(selectSlotInput.player == _currentPlayerTurn && _slotsCollums[selectSlotInput.slotX][selectSlotInput.slotY] == Player.None)
 				{
 					SelectSlotAction selectSlotAction = new SelectSlotAction(selectSlotInput.slotX, selectSlotInput.slotY, selectSlotInput.player);
 					ProcessAction(selectSlotAction);
@@ -164,7 +164,7 @@ public class CatMultiplayerManager : MultiplayerManager
 		
 		if(selectSlotAction != null)
 		{
-			_slotsRows[selectSlotAction.slotX][selectSlotAction.slotY] = selectSlotAction.player;
+			_slotsCollums[selectSlotAction.slotX][selectSlotAction.slotY] = selectSlotAction.player;
 
 			CheckForWinner();
 			//Update turn
@@ -181,109 +181,122 @@ public class CatMultiplayerManager : MultiplayerManager
 		//Check Rows
 		for(int x = 0; x < _slotsSize; x++)
 		{
-			List<Player> currentRow = _slotsRows[x];
-			Player player 			= currentRow[0];
-			List<SlotInfo> slots	= new List<SlotInfo>();
+			List<Player> currentCollum = _slotsCollums[x];
+			Player player 			   = currentCollum[0];
 
-			slots.Add(new SlotInfo(x, 0));
-
-			string row = "row " + x + " " + player + ",";
-
-			for(int y = 1; y < _slotsSize; y++)
+			if(player != Player.None)
 			{
-				Player currentPlayer = currentRow[y];
-				row 				+= currentPlayer + ",";
+				Player currentPlayer = player;
+				List<SlotInfo> slots = new List<SlotInfo>();
 
-				if(player != currentPlayer)
-					break;
+				slots.Add(new SlotInfo(x, 0));
 
-				slots.Add(new SlotInfo(x, y));
-			}
+				string collum = "collum " + x + " " + player + ",";
 
-			Debug.Log(row);
+				for(int y = 1; y < _slotsSize && player == currentPlayer; y++)
+				{
+					currentPlayer = currentCollum[y];
+					collum 		  += currentPlayer + ",";
 
-			if(slots.Count == _slotsSize)
-			{
-				Debug.Log("Winner on rows = " + player);
-				_winner 		= player;
-				_winnerSlots 	= slots;
-				return;
+					if(player == currentPlayer)
+						slots.Add(new SlotInfo(x, y));
+				}
+
+				Debug.Log(collum);
+
+				if(slots.Count == _slotsSize)
+				{
+					Debug.Log("Winner on rows = " + player);
+					_winner 		= player;
+					_winnerSlots 	= slots;
+					return;
+				}
 			}
 		}
 
 		//Check Collums
 		for(int y = 0; y < _slotsSize; y++)
 		{
-			List<Player> currentCollum = new List<Player>();
-			Player player 			   = _slotsRows[0][y];
-			List<SlotInfo> slots	   = new List<SlotInfo>();
+			Player player = _slotsCollums[0][y];
 
-			slots.Add(new SlotInfo(0, y));
-
-			string colum = "colum " + y + " " + player + ",";
-
-			for(int x = 1; x < _slotsSize; x++)
+			if(player != Player.None)
 			{
-				Player currentPlayer = _slotsRows[x][y];
-				colum 				+= currentPlayer + ",";
+				Player currentPlayer = player;
+				List<SlotInfo> slots = new List<SlotInfo>();
 
-				if(player != currentPlayer)
-					break;
+				slots.Add(new SlotInfo(0, y));
 
-				slots.Add(new SlotInfo(x, y));
-			}
+				string row = "row " + y + " " + player + ",";
 
-			Debug.Log(colum);
+				for(int x = 1; x < _slotsSize && player == currentPlayer; x++)
+				{
+					currentPlayer = _slotsCollums[x][y];
+					row 		 += currentPlayer + ",";
 
-			if(slots.Count == _slotsSize)
-			{
-				Debug.Log("Winner on collums = " + player);
-				_winner 		= player;
-				_winnerSlots 	= slots;
-				return;
+					if(player == currentPlayer)
+					   slots.Add(new SlotInfo(x, y));
+				}
+
+				Debug.Log(row);
+
+				if(slots.Count == _slotsSize)
+				{
+					Debug.Log("Winner on collums = " + player);
+					_winner 		= player;
+					_winnerSlots 	= slots;
+					return;
+				}
 			}
 		}
 
 		//Check bottom-left to top/right 
-		Player player1 			= _slotsRows[0][0];
-		List<SlotInfo> slots1	= new List<SlotInfo>();
-		slots1.Add(new SlotInfo(0, 0));
+		Player player1 = _slotsCollums[0][0];
 
-		for(int x = 1, y = 1; x < _slotsSize; x++, y++)
+		if(player1 != Player.None)
 		{
-			if(player1 != _slotsRows[x][y])
-				break;
+			List<SlotInfo> slots1	= new List<SlotInfo>();
+			slots1.Add(new SlotInfo(0, 0));
 
-			slots1.Add(new SlotInfo(x, y));
-		}
+			for(int x = 1, y = 1; x < _slotsSize; x++, y++)
+			{
+				if(player1 != _slotsCollums[x][y])
+					break;
 
-		if(slots1.Count == _slotsSize)
-		{
-			Debug.Log("Winner on bottom-left to top/right = " + player1);
-			_winner 		= player1;
-			_winnerSlots 	= slots1;
-			return;
+				slots1.Add(new SlotInfo(x, y));
+			}
+
+			if(slots1.Count == _slotsSize)
+			{
+				Debug.Log("Winner on bottom-left to top/right = " + player1);
+				_winner 		= player1;
+				_winnerSlots 	= slots1;
+				return;
+			}
 		}
 
 		//Check bottom-right to top-left
-		Player player2 			= _slotsRows[2][0];
-		List<SlotInfo> slots2	= new List<SlotInfo>();
-		slots2.Add(new SlotInfo(2, 0));
-		
-		for(int x = 1, y = 1; x < _slotsSize; x--, y++)
-		{
-			if(player2 != _slotsRows[x][y])
-				break;
+		Player player2 = _slotsCollums[2][0];
 
-			slots2.Add(new SlotInfo(x, y));
-		}
-		
-		if(slots2.Count == _slotsSize)
+		if(player2 != Player.None)
 		{
-			Debug.Log("Winner on bottom-right to top-left = " + player2);
-			_winner 		= player2;
-			_winnerSlots 	= slots2;
-			return;
+			List<SlotInfo> slots2	= new List<SlotInfo>();
+			slots2.Add(new SlotInfo(2, 0));
+			
+			for(int x = 1, y = 1; x < _slotsSize; x--, y++)
+			{
+				if(player2 != _slotsCollums[x][y])
+					break;
+
+				slots2.Add(new SlotInfo(x, y));
+			}
+			
+			if(slots2.Count == _slotsSize)
+			{
+				Debug.Log("Winner on bottom-right to top-left = " + player2);
+				_winner 		= player2;
+				_winnerSlots 	= slots2;
+				return;
+			}
 		}
 
 		Debug.Log ("No winner found");
