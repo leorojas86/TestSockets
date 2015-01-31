@@ -254,7 +254,7 @@ public class CatMultiplayerManager : MultiplayerManager
 			}
 		}
 
-		//Check bottom-left to top/right 
+		//Check top-left to bottom/right 
 		Player player1 = _slotsCollums[0][0];
 
 		if(player1 != Player.None)
@@ -272,22 +272,22 @@ public class CatMultiplayerManager : MultiplayerManager
 
 			if(slots1.Count == _slotsSize)
 			{
-				Debug.Log("Winner on bottom-left to top/right = " + player1);
+				Debug.Log("Winner on top-left to bottom/right = " + player1);
 				_winner 		= player1;
 				_winnerSlots 	= slots1;
 				return;
 			}
 		}
 
-		//Check bottom-right to top-left
+		//Check top-right to bottom-left
 		Player player2 = _slotsCollums[2][0];
 
 		if(player2 != Player.None)
 		{
-			List<SlotInfo> slots2	= new List<SlotInfo>();
+			List<SlotInfo> slots2 = new List<SlotInfo>();
 			slots2.Add(new SlotInfo(2, 0));
 			
-			for(int x = 1, y = 1; x < _slotsSize; x--, y++)
+			for(int x = 1, y = 1; y < _slotsSize; x--, y++)
 			{
 				if(player2 != _slotsCollums[x][y])
 					break;
@@ -297,7 +297,7 @@ public class CatMultiplayerManager : MultiplayerManager
 			
 			if(slots2.Count == _slotsSize)
 			{
-				Debug.Log("Winner on bottom-right to top-left = " + player2);
+				Debug.Log("Winner on top-right to bottom-left = " + player2);
 				_winner 		= player2;
 				_winnerSlots 	= slots2;
 				return;
@@ -314,7 +314,7 @@ public class CatMultiplayerManager : MultiplayerManager
 		for(int i = 0; i < _winnerSlots.Count; i++)
 			winnerSlots += "x = " + _winnerSlots[i].x + " y = " + _winnerSlots[i].y + ",";
 
-		Debug.Log("Winner Slots: " + winnerSlots);
+		//Debug.Log("Winner Slots: " + winnerSlots);
 
 		for(int i = 0; i < _winnerSlots.Count; i++)
 		{
@@ -322,12 +322,12 @@ public class CatMultiplayerManager : MultiplayerManager
 
 			if(winnerSlot.x == x && winnerSlot.y == y)
 			{
-				Debug.Log("IsWinnerSlot  x = " + x + " y = " + y);
+				//Debug.Log("IsWinnerSlot  x = " + x + " y = " + y);
 				return true;
 			}
 		}
 
-		Debug.Log("NOT IsWinnerSlot  x = " + x + " y = " + y);
+		//Debug.Log("NOT IsWinnerSlot  x = " + x + " y = " + y);
 		return false;
 	}
 
