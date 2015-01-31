@@ -12,7 +12,7 @@ public class SocketClient : MonoBehaviour
 {
 	#region Constants
 
-	private float LOST_SERVER_SECONDS = 2;
+	private float LOST_SERVER_SECONDS = 4;
 
 	#endregion
 
