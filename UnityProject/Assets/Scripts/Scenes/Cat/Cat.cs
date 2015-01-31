@@ -107,17 +107,16 @@ public class Cat : MonoBehaviour
 
 	private void OnSlotButtonClick(SimpleButton sender)
 	{
-		if(CatMultiplayerManager.Instance.Winner == CatMultiplayerManager.Player.None)
+		if(CatMultiplayerManager.Instance.IsGameOver())
+			CatMultiplayerManager.Instance.ProcessInput(new StartNewGameInput());
+		else
 		{
 			Vector2 slotPosition 			= (Vector2)sender.customTag;
 			SelectSlotInput selectSlotInput = new SelectSlotInput((int)slotPosition.x, (int)slotPosition.y, CatMultiplayerManager.Instance.MyPlayer);
 
 			Debug.Log("OnSlotButtonClick slotPosition = " + slotPosition);
 			CatMultiplayerManager.Instance.ProcessInput(selectSlotInput);
-			//sender.GetComponent<SpriteRenderer>().sprite = spriteX;
 		}
-		else
-			StartNewGame();
 	}
 
 	private void OnGameAction(GameAction gameAction)
@@ -137,7 +136,14 @@ public class Cat : MonoBehaviour
 				UpdateWinner();
 		}
 		else
-			Debug.LogError("Unknow game action = " + gameAction);
+		{
+			StartNewGameAction startNewGameAction = gameAction as StartNewGameAction;
+
+			if(startNewGameAction != null)
+				StartNewGame();
+			else
+			    Debug.LogError("Unknow game action = " + gameAction);
+		}
 	}
 
 	#endregion

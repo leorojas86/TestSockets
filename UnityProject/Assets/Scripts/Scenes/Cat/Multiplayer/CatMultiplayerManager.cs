@@ -32,7 +32,7 @@ public class CatMultiplayerManager : MultiplayerManager
 	public enum GameActions
 	{
 		None,
-		StartGame,
+		StartNewGame,
 		SelectSlot
 	} 
 
@@ -113,6 +113,9 @@ public class CatMultiplayerManager : MultiplayerManager
 	{
 		_gameActions.Add(new SelectSlotAction());
 		_playerInputs.Add(new SelectSlotInput());
+
+		_gameActions.Add(new StartNewGameAction());
+		_playerInputs.Add(new StartNewGameInput());
 	}
 
 	public override void StartNewGame()
@@ -157,7 +160,18 @@ public class CatMultiplayerManager : MultiplayerManager
 				}
 			}
 			else
+			{
+				StartNewGameInput startNewGameInput = input as StartNewGameInput;
+
+				if(startNewGameInput != null)
+				{
+					StartNewGameAction startNewGameAction = new StartNewGameAction();
+					ProcessAction(startNewGameAction);
+					return true;
+				}
+
 				Debug.LogError("Unknown player input = " + input);
+			}
 		}
 
 		return false;
@@ -309,10 +323,10 @@ public class CatMultiplayerManager : MultiplayerManager
 
 	public bool IsWinnerSlot(int x, int y)
 	{
-		string winnerSlots = "";
+		//string winnerSlots = "";
 
-		for(int i = 0; i < _winnerSlots.Count; i++)
-			winnerSlots += "x = " + _winnerSlots[i].x + " y = " + _winnerSlots[i].y + ",";
+		//for(int i = 0; i < _winnerSlots.Count; i++)
+			//winnerSlots += "x = " + _winnerSlots[i].x + " y = " + _winnerSlots[i].y + ",";
 
 		//Debug.Log("Winner Slots: " + winnerSlots);
 
@@ -329,6 +343,25 @@ public class CatMultiplayerManager : MultiplayerManager
 
 		//Debug.Log("NOT IsWinnerSlot  x = " + x + " y = " + y);
 		return false;
+	}
+
+	public bool IsGameOver()
+	{
+		return _winner != Player.None || AreAllSlotsSelected();
+	}
+
+	public bool AreAllSlotsSelected()
+	{
+		for(int x = 0; x < _slotsSize; x++)
+		{
+			for(int y = 0; y < _slotsSize; y++)
+			{
+				if(_slotsCollums[x][y] == Player.None)
+					return false;
+			}
+		}
+
+		return true;
 	}
 
 	#endregion
