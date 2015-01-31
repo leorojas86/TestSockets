@@ -5,7 +5,7 @@ public abstract class GameAction : MultiplayerMessage
 {
 	#region Constructors
 
-	public GameAction(int subType):base(MultiplayerMessage.Type.Action, subType)
+	public GameAction(int subType, int messageBytes):base(MultiplayerMessage.Type.Action, subType, messageBytes)
 	{
 	}
 

@@ -106,12 +106,12 @@ public class SocketServer : MonoBehaviour
 
 			_clients.Clear();
 
-			StopBroadcastMessages();
+			StopSendingInfoBroadcast();
 			StopProcessingIncomingClients();
 		}
 	}
 
-	public void StopBroadcastMessages()
+	public void StopSendingInfoBroadcast()
 	{
 		if(_isBroadcastingServerInfo)
 		{
@@ -280,7 +280,7 @@ public class SocketServer : MonoBehaviour
 	void OnDestroy()
 	{
 		StopServer();
-		StopBroadcastMessages();
+		StopSendingInfoBroadcast();
 	}
 
 	#endregion

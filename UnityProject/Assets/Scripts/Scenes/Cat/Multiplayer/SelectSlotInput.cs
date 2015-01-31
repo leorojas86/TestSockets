@@ -3,6 +3,12 @@ using System.Collections;
 
 public class SelectSlotInput : PlayerInput
 {
+	#region Constants
+	
+	public const int MESSAGE_BYTES = 32;
+	
+	#endregion
+
 	#region Variables
 
 	public int slotX 						  = 0;
@@ -13,14 +19,14 @@ public class SelectSlotInput : PlayerInput
 
 	#region Constructors
 
-	public SelectSlotInput(int slotX, int slotY, CatMultiplayerManager.Player player):base((int)CatMultiplayerManager.PlayerInputs.SelectSlot)
+	public SelectSlotInput(int slotX, int slotY, CatMultiplayerManager.Player player):base((int)CatMultiplayerManager.PlayerInputs.SelectSlot, MESSAGE_BYTES)
 	{
 		this.slotX  = slotX;
 		this.slotY  = slotY;
 		this.player = player;
 	}
 
-	public SelectSlotInput():base((int)CatMultiplayerManager.PlayerInputs.SelectSlot)
+	public SelectSlotInput():base((int)CatMultiplayerManager.PlayerInputs.SelectSlot, MESSAGE_BYTES)
 	{
 	}
 

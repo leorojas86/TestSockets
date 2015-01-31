@@ -35,6 +35,7 @@ public class Lobby : MonoBehaviour
 	void Start() 
 	{
 		SocketsManager.Instance.Client.FindServers(null, null);
+
 		SocketsManager.Instance.IsLogEnabled = true;
 	}
 
@@ -43,6 +44,7 @@ public class Lobby : MonoBehaviour
 		if(SocketsManager.Instance.Server.IsStarted)
 		{
 			GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
+
 			GUI.Label(new Rect(10, 50, 300, 30), "Waiting for " + gameInfo.type + " client at " + SocketsManager.Instance.Server.ServerInfo.ip);
 
 			if(GUI.Button(new Rect(10, 300, 100, 30), "Stop Game"))
@@ -77,8 +79,7 @@ public class Lobby : MonoBehaviour
 			for(int x = 0; x < (int)Games.Count; x++)
 			{
 				Games currentGame = (Games)x;
-				
-				string text = "Start " + currentGame + " Game";
+				string text       = "Start " + currentGame + " Game";
 				
 				if(GUI.Button(new Rect(10, y, 200, 30), text))
 				{
@@ -98,6 +99,7 @@ public class Lobby : MonoBehaviour
 
 	private void OnClientConnected(TcpClient client)
 	{
+		SocketsManager.Instance.Server.StopSendingInfoBroadcast();
 		GameInfo gameInfo = GetGameInfo(SocketsManager.Instance.Server.ServerInfo);
 		Application.LoadLevel(gameInfo.type + "Scene");
 	}

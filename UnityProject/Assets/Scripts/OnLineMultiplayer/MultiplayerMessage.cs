@@ -18,17 +18,19 @@ public class MultiplayerMessage
 
 	#region Variables
 
-	public Type type   = Type.Unknown;
-	public int subType = 0;
+	public Type type           = Type.Unknown;
+	public int subType         = 0;
+	protected int messageBytes = 32;
 
 	#endregion
 
 	#region Constructors
 
-	public MultiplayerMessage(Type type, int subType)
+	public MultiplayerMessage(Type type, int subType, int messageBytes)
 	{
-		this.type 		= type;
-		this.subType 	= subType;
+		this.type 	      = type;
+		this.subType      = subType;
+		this.messageBytes = messageBytes;
 	}
 
 	public MultiplayerMessage()
@@ -41,7 +43,7 @@ public class MultiplayerMessage
 
 	public byte[] ToBytes()
 	{
-		using(MemoryStream memoryStream = new MemoryStream())
+		using(MemoryStream memoryStream = new MemoryStream(messageBytes))
 		{
 			using(BinaryWriter binaryWriter = new BinaryWriter(memoryStream))
 			{

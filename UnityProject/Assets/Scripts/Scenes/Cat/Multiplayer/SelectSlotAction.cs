@@ -3,24 +3,30 @@ using System.Collections;
 
 public class SelectSlotAction : GameAction
 {
+	#region Constants
+
+	public const int MESSAGE_BYTES = 32;
+
+	#endregion
+
 	#region Variables
 
-	public int slotX 						  = 0;
-	public int slotY 						  = 0;
+	public int slotX 						   = 0;
+	public int slotY 						   = 0;
 	public CatMultiplayerManager.Player player = CatMultiplayerManager.Player.None;
 
 	#endregion
 
 	#region Constructors
 
-	public SelectSlotAction(int slotX, int slotY, CatMultiplayerManager.Player player):base((int)CatMultiplayerManager.GameActions.SelectSlot)
+	public SelectSlotAction(int slotX, int slotY, CatMultiplayerManager.Player player):base((int)CatMultiplayerManager.GameActions.SelectSlot, MESSAGE_BYTES)
 	{
 		this.slotX  = slotX;
 		this.slotY  = slotY;
 		this.player = player;
 	}
 
-	public SelectSlotAction():base((int)CatMultiplayerManager.GameActions.SelectSlot)
+	public SelectSlotAction():base((int)CatMultiplayerManager.GameActions.SelectSlot, MESSAGE_BYTES)
 	{
 	}
 

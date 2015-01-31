@@ -5,7 +5,7 @@ public abstract class PlayerInput : MultiplayerMessage
 {
 	#region Constructors
 	
-	public PlayerInput(int subType):base(MultiplayerMessage.Type.Input, subType)
+	public PlayerInput(int subType, int messageBytes):base(MultiplayerMessage.Type.Input, subType, messageBytes)
 	{
 	}
 	
