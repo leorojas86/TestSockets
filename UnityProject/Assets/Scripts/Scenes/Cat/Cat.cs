@@ -61,6 +61,7 @@ public class Cat : MonoBehaviour
 			{
 				SimpleButton button 						 = _slotsButtons[x][y];
 				button.GetComponent<SpriteRenderer>().sprite = spriteEmpty;
+				button.GetComponent<SpriteRenderer>().color  = new Color(1f,1f,1f,1f);
 			}
 		}
 
@@ -86,9 +87,22 @@ public class Cat : MonoBehaviour
 			text.text = CatMultiplayerManager.Instance.CurrentPlayerTurn.ToString().Replace("Player", string.Empty) + " Turn";
 	}
 
-	private void UpdateWinnerText()
+	private void UpdateWinner()
 	{
 		text.text = "Winner " + CatMultiplayerManager.Instance.Winner.ToString().Replace("Player", string.Empty);
+
+		for(int x = 0; x < CatMultiplayerManager.Instance.SlotsSize; x++)
+		{
+			for(int y = 0; y < CatMultiplayerManager.Instance.SlotsSize; y++)
+			{
+				SimpleButton button = _slotsButtons[x][y];
+
+				if(CatMultiplayerManager.Instance.IsWinnerSlot(x, y))
+					button.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,1f);
+				else
+					button.GetComponent<SpriteRenderer>().color = new Color(1f,1f,1f,0.5f);
+			}
+		}
 	}
 
 	private void OnSlotButtonClick(SimpleButton sender)
@@ -120,7 +134,7 @@ public class Cat : MonoBehaviour
 			UpdateTurnText();
 
 			if(CatMultiplayerManager.Instance.Winner != CatMultiplayerManager.Player.None)
-				UpdateWinnerText();
+				UpdateWinner();
 		}
 		else
 			Debug.LogError("Unknow game action = " + gameAction);

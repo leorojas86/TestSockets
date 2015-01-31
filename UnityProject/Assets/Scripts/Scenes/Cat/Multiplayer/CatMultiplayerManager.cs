@@ -13,8 +13,8 @@ public class CatMultiplayerManager : MultiplayerManager
 		
 		public SlotInfo(int x, int y)
 		{
-			this.x = 0;
-			this.y = 0;
+			this.x = x;
+			this.y = y;
 		}
 	}
 
@@ -90,6 +90,11 @@ public class CatMultiplayerManager : MultiplayerManager
 	public Player CurrentPlayerTurn
 	{
 		get { return _currentPlayerTurn; }
+	}
+
+	public List<SlotInfo> WinnerSlots
+	{
+		get { return _winnerSlots; }
 	}
 
 	#endregion
@@ -300,6 +305,30 @@ public class CatMultiplayerManager : MultiplayerManager
 		}
 
 		Debug.Log ("No winner found");
+	}
+
+	public bool IsWinnerSlot(int x, int y)
+	{
+		string winnerSlots = "";
+
+		for(int i = 0; i < _winnerSlots.Count; i++)
+			winnerSlots += "x = " + _winnerSlots[i].x + " y = " + _winnerSlots[i].y + ",";
+
+		Debug.Log("Winner Slots: " + winnerSlots);
+
+		for(int i = 0; i < _winnerSlots.Count; i++)
+		{
+			SlotInfo winnerSlot = _winnerSlots[i];
+
+			if(winnerSlot.x == x && winnerSlot.y == y)
+			{
+				Debug.Log("IsWinnerSlot  x = " + x + " y = " + y);
+				return true;
+			}
+		}
+
+		Debug.Log("NOT IsWinnerSlot  x = " + x + " y = " + y);
+		return false;
 	}
 
 	#endregion
