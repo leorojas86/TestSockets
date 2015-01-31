@@ -17,19 +17,15 @@ public abstract class MultiplayerManager
 
 	public MultiplayerManager()
 	{
+		InitializeMessages();
+		
+		SocketsManager.Instance.Client.OnServerMessage = OnSocketMessage;
+		SocketsManager.Instance.Server.OnClientMessage = OnSocketMessage;
 	}
 
 	#endregion
 
 	#region Methods
-
-	public virtual void StartNewGame()
-	{
-		InitializeMessages();
-
-		SocketsManager.Instance.Client.OnServerMessage = OnSocketMessage;
-		SocketsManager.Instance.Server.OnClientMessage = OnSocketMessage;
-	}
 
 	protected virtual void OnSocketMessage(SocketMessage message)
 	{

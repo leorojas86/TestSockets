@@ -118,18 +118,16 @@ public class CatMultiplayerManager : MultiplayerManager
 		_playerInputs.Add(new StartNewGameInput());
 	}
 
-	public override void StartNewGame()
+	public void StartNewGame()
 	{
-		base.StartNewGame();
-
 		_player 	 = SocketsManager.Instance.Server.IsStarted ? Player.PlayerX : Player.PlayerO;
 		_winner      = Player.None;
 		_winnerSlots = null;
 
-		if(_currentPlayerTurn == Player.None || _currentPlayerTurn == Player.PlayerX)
+		if(_currentPlayerTurn == Player.None)
 			_currentPlayerTurn = Player.PlayerO;
-		else
-			_currentPlayerTurn = Player.PlayerX;
+
+		_slotsCollums.Clear();
 
 		for(int x = 0; x < _slotsSize; x++)
 		{
